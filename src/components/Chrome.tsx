@@ -56,12 +56,21 @@ export function Header({
         </div>
 
         <div className="flex items-center gap-2 ml-auto">
+          {/* Der wichtigste Satz der ganzen Oberflaeche steht in der Kopfzeile, nicht
+              im Fuss: Wer eine Konstruktionsdatei ablegen soll, will vorher wissen,
+              wohin sie geht — nicht hinterher.
+
+              Zwei Fassungen statt einer: Der ausgeschriebene Satz braucht rund
+              290 px und draengt unterhalb von 1280 px die Sprachwahl aus der Zeile.
+              Die Kurzform sagt dasselbe und passt; die vollstaendige Begruendung
+              steht ohnehin im Titelattribut und auf der Startseite. */}
           <span
-            className="hidden md:inline-flex items-center gap-1.5 text-[11px] font-semibold text-good bg-good/10 rounded-lg px-2.5 py-1.5"
-            title={t("privacy.p1")}
+            className="hidden sm:inline-flex items-center gap-1.5 whitespace-nowrap text-[11px] font-semibold text-good bg-good/10 rounded-lg px-2.5 py-1.5"
+            title={t("privacy.p2")}
           >
-            <Icon path={ICONS.lock} className="w-3.5 h-3.5" />
-            {t("privacy.badge")}
+            <Icon path={ICONS.lock} className="w-3.5 h-3.5 shrink-0" />
+            <span className="xl:hidden">{t("privacy.badgeShort")}</span>
+            <span className="hidden xl:inline">{t("privacy.badge")}</span>
           </span>
 
           {hasModel && (

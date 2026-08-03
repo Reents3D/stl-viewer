@@ -327,7 +327,12 @@ const S = {
   },
 
   /* ---------------------------------------------------------------- Datenschutz */
-  "privacy.badge": { de: "Kein Upload", en: "No upload" },
+  "privacy.badge": {
+    de: "Kein Upload, Bearbeitung lokal in Ihrem Browser",
+    en: "No upload, processed locally in your browser",
+  },
+  /** Kurzform fuer schmale Kopfzeilen — dieselbe Aussage, ohne die Zeile zu sprengen. */
+  "privacy.badgeShort": { de: "Kein Upload", en: "No upload" },
   "privacy.title": { de: "Ihre Datei bleibt bei Ihnen", en: "Your file stays with you" },
   "privacy.p1": {
     de: "Dieses Werkzeug lädt nichts hoch. Die STL-Datei wird im Arbeitsspeicher Ihres Browsers gelesen und dort angezeigt — beim Schließen des Reiters ist sie weg.",
