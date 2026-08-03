@@ -1,7 +1,20 @@
 name: Deploy to GitHub Pages
 
+# NUR VON HAND, SOLANGE DAS REPOSITORY PRIVAT IST.
+#
+# GitHub Pages braucht fuer ein privates Repository einen kostenpflichtigen Tarif
+# und muss zusaetzlich in den Einstellungen aktiviert sein. Ohne das scheitert
+# actions/configure-pages bei JEDEM Push - und eine Pipeline, die immer rot ist,
+# sieht sich nach zwei Wochen niemand mehr an. Dann faellt auch der echte Fehler
+# nicht mehr auf.
+#
+# ZUM VEROEFFENTLICHEN:
+#   1. Repository oeffentlich schalten (oder Pages im Tarif freischalten)
+#   2. Einstellungen > Pages > Source: GitHub Actions
+#   3. Hier die naechste Zeile einkommentieren:
+# on:
+#   push: { branches: [main] }
 on:
-  push: { branches: [main] }
   workflow_dispatch:
 
 permissions:
