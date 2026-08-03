@@ -564,7 +564,8 @@ class Layout {
       const image = annotationImages.get(annotation.id) ?? null;
       const imageWidth = 78;
       const imageHeight = imageWidth / SHOT_ASPECT;
-      const blockHeight = Math.max(imageHeight, 34) + 8;
+      const captionHeight = image ? 4.5 : 0;
+      const blockHeight = Math.max(imageHeight + captionHeight, 34) + 8;
       this.ensureSpace(blockHeight);
 
       const top = this.y;
@@ -574,6 +575,17 @@ class Layout {
         d.setDrawColor(...HAIRLINE);
         d.setLineWidth(0.15);
         d.rect(MARGIN.left, top, imageWidth, imageHeight);
+
+        // Ausdruecklich dazuschreiben, WELCHE Ansicht das ist. Das Bild zeigt
+        // den Blickwinkel, aus dem die Markierung gesetzt wurde — nicht eine
+        // beliebige Ansicht des Bauteils. Ohne diesen Satz muss der Leser es
+        // erraten, und bei zwei aehnlichen Ansichten raet er falsch.
+        d.setFont("helvetica", "normal");
+        d.setFontSize(6.5);
+        d.setTextColor(...MUTED);
+        d.text(this.t("pdf.annotationView"), MARGIN.left + imageWidth / 2, top + imageHeight + 3, {
+          align: "center",
+        });
       }
 
       const textX = MARGIN.left + imageWidth + 6;

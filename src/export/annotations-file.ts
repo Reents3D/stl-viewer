@@ -105,6 +105,9 @@ function normaliseAnnotation(value: unknown, index: number): Annotation | null {
   const camera = isRecord(value.camera) ? value.camera : {};
   const position = isVec3Array(camera.position) ? camera.position : ([0, 0, 1] as [number, number, number]);
   const target = isVec3Array(camera.target) ? camera.target : ([0, 0, 0] as [number, number, number]);
+  // Dateien aus fruehen Fassungen kennen `up` nicht — dann gilt Z nach oben,
+  // die Voreinstellung des Betrachters.
+  const up = isVec3Array(camera.up) ? camera.up : ([0, 0, 1] as [number, number, number]);
 
   const category = ANNOTATION_CATEGORIES.some((c) => c.id === value.category)
     ? (value.category as AnnotationCategory)
@@ -115,7 +118,7 @@ function normaliseAnnotation(value: unknown, index: number): Annotation | null {
     number: typeof value.number === "number" ? value.number : index + 1,
     point,
     normal,
-    camera: { position, target },
+    camera: { position, target, up },
     title: typeof value.title === "string" ? value.title : "",
     text: typeof value.text === "string" ? value.text : "",
     category,

@@ -68,6 +68,16 @@ export const MODEL_COLORS: ReadonlyArray<{ hex: string; label: string }> = [
   { hex: "#C9A227", label: "Gold" },
 ];
 
+/**
+ * Kamerastand. `up` ist optional, weil Anmerkungsdateien aus fruehen Fassungen
+ * es nicht enthalten — ohne die Angabe gilt Z nach oben.
+ */
+export interface CameraState {
+  position: [number, number, number];
+  target: [number, number, number];
+  up?: [number, number, number];
+}
+
 export interface Annotation {
   id: string;
   /** Fortlaufende Nummer fuer Marke, Liste und PDF — bleibt beim Loeschen stabil. */
@@ -76,7 +86,7 @@ export interface Annotation {
   point: { x: number; y: number; z: number };
   normal: { x: number; y: number; z: number };
   /** Kamerastand beim Setzen — erlaubt "Ansicht wiederherstellen" und das PDF. */
-  camera: { position: [number, number, number]; target: [number, number, number] };
+  camera: CameraState;
   title: string;
   text: string;
   category: AnnotationCategory;

@@ -21,7 +21,7 @@ import {
   setMaterialColor,
   type ModelMaterials,
 } from "./materials";
-import type { Axis, ClipState, StandardView, ViewState } from "./types";
+import type { Axis, CameraState, ClipState, StandardView, ViewState } from "./types";
 
 export interface HitResult {
   /** Auftreffpunkt in MODELLKOORDINATEN (unabhaengig von Drehung und Lage). */
@@ -439,13 +439,32 @@ export class ModelScene {
     this.invalidate();
   }
 
-  cameraState(): { position: [number, number, number]; target: [number, number, number] } {
+  /**
+   * Kamerastand vollstaendig — einschliesslich der Oben-Richtung.
+   *
+   * `up` gehoert zwingend dazu: Von oben und von unten faellt die Blickrichtung
+   * mit der Hochachse zusammen, deshalb schaltet setView() dort auf (0,1,0) um.
+   * Wurde nur Position und Ziel gemerkt, kam eine gespeicherte Ansicht nach
+   * einem Besuch in der Draufsicht VERKANTET zurueck — dieselbe Blickrichtung,
+   * aber um die Sichtachse gedreht. Im PDF hiess das: Das Bild zur Anmerkung
+   * zeigte die richtige Stelle in einer Lage, in der der Kunde sie nie gesehen
+   * hatte. Aufgefallen beim Vergleich zweier Aufnahmen, die identisch haetten
+   * sein muessen.
+   */
+  cameraState(): CameraState {
     const p = this.camera.position;
     const t = this.controls.target;
-    return { position: [p.x, p.y, p.z], target: [t.x, t.y, t.z] };
+    const u = this.camera.up;
+    return { position: [p.x, p.y, p.z], target: [t.x, t.y, t.z], up: [u.x, u.y, u.z] };
   }
 
-  restoreCamera(state: { position: [number, number, number]; target: [number, number, number] }): void {
+  restoreCamera(state: CameraState): void {
+    // Aeltere Anmerkungsdateien kennen `up` nicht. Z nach oben ist die
+    // Voreinstellung dieses Betrachters und damit der richtige Rueckfall.
+    const up: [number, number, number] = state.up ?? [0, 0, 1];
+    this.perspective.up.set(...up);
+    this.ortho.up.set(...up);
+    this.camera.up.set(...up);
     this.camera.position.set(...state.position);
     this.controls.target.set(...state.target);
     if (this.camera === this.ortho) this.updateOrthoFrustum();

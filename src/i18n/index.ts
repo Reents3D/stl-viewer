@@ -318,6 +318,10 @@ const S = {
   "pdf.sectionTurntable": { de: "Rundumansichten um die {axis}-Achse", en: "All-round views about the {axis} axis" },
   "pdf.sectionAnnotations": { de: "Anmerkungen", en: "Annotations" },
   "pdf.noAnnotations": { de: "Keine Anmerkungen erfasst.", en: "No annotations recorded." },
+  "pdf.annotationView": {
+    de: "Blickwinkel beim Setzen der Markierung",
+    en: "Viewpoint at the time of marking",
+  },
   "pdf.annotationOverview": {
     de: "Übersicht: alle {n} markierten Stellen am Modell",
     en: "Overview: all {n} marked spots on the model",
