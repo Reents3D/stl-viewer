@@ -1,0 +1,13 @@
+dist/
+node_modules/
+.DS_Store
+._*
+*.local
+coverage/
+.vite/
+*.tsbuildinfo
+
+# Testmodelle von Kunden gehoeren nie in die Historie.
+/testdaten/
+*.stl
+!tests/fixtures/*.stl

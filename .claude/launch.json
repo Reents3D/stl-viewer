@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "stl-viewer",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--", "--port", "5283", "--strictPort"],
+      "port": 5283
+    },
+    {
+      "name": "stl-viewer-build",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "preview", "--", "--port", "5284", "--strictPort"],
+      "port": 5284
+    }
+  ]
+}

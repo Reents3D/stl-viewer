@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>STL-Betrachter — 3D-Modell im Browser prüfen, kommentieren, dokumentieren | Reents3D</title>
+    <meta
+      name="description"
+      content="Kostenloser STL-Betrachter: Datei ins Fenster ziehen, Modell drehen, vermessen, Anmerkungen setzen und als PDF-Dokumentation exportieren. Die Datei verlässt Ihren Rechner nicht — es gibt keinen Upload."
+    />
+    <meta name="theme-color" content="#0C4251" />
+    <link rel="canonical" href="https://reents3d.github.io/stl-viewer/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="STL-Betrachter — 3D-Modell im Browser prüfen und dokumentieren" />
+    <meta
+      property="og:description"
+      content="Datei hineinziehen, Modell prüfen, Anmerkungen setzen, PDF erzeugen. Ohne Upload, ohne Konto, ohne Speicherung."
+    />
+    <meta property="og:url" content="https://reents3d.github.io/stl-viewer/" />
+    <meta property="og:locale" content="de_DE" />
+    <meta property="og:site_name" content="Reents3D" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <!-- Relativ, nicht %BASE_URL%: der Entwicklungsserver setzt die Basis sonst ein
+         zweites Mal davor. Die relative Form ist in beiden Faellen richtig. -->
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <script type="application/ld+json">
+      [
+        {
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          "name": "STL-Betrachter",
+          "applicationCategory": "DesignApplication",
+          "operatingSystem": "Web",
+          "url": "https://reents3d.github.io/stl-viewer/",
+          "inLanguage": ["de", "en"],
+          "description": "Kostenloser STL-Betrachter für den Browser. Modell ansehen, vermessen, schneiden, kommentieren und als PDF-Dokumentation exportieren. Die Datei wird nicht hochgeladen und nicht gespeichert.",
+          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+          "featureList": [
+            "STL per Drag & Drop öffnen, ohne Upload",
+            "Binäres und ASCII-STL",
+            "Abmessungen, Volumen, Oberfläche und Dreieckszahl",
+            "Gewichtsschätzung für 41 Werkstoffe",
+            "Bauraumprüfung gegen reale XXL-Anlagen",
+            "Schnittebene und Punkt-zu-Punkt-Messung",
+            "Anmerkungen direkt am Modell",
+            "PDF-Dokumentation mit Rundumansichten je Achse"
+          ],
+          "isAccessibleForFree": true,
+          "publisher": {
+            "@type": "Organization",
+            "name": "Reents Technologies GmbH",
+            "url": "https://reents3d.de"
+          }
+        },
+        {
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          "name": "Reents Technologies GmbH",
+          "url": "https://reents3d.de",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Lehmweg 95-97",
+            "postalCode": "25488",
+            "addressLocality": "Holm",
+            "addressCountry": "DE"
+          }
+        }
+      ]
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

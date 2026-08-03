@@ -1,0 +1,42 @@
+name: Datei öffnet nicht oder wird falsch dargestellt
+description: Eine STL-Datei lässt sich nicht laden, sieht falsch aus oder liefert falsche Kennwerte.
+labels: ["fehler"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Bitte keine Kundendateien anhängen.** Wenn die Datei vertraulich ist, beschreiben
+        Sie stattdessen, womit sie erzeugt wurde und wie groß sie ist — das reicht meist,
+        um den Fall nachzustellen.
+  - type: textarea
+    id: was
+    attributes:
+      label: Was passiert?
+      placeholder: Nach dem Ablegen bleibt die Fläche leer, es erscheint keine Meldung.
+    validations: { required: true }
+  - type: textarea
+    id: erwartet
+    attributes:
+      label: Was wurde erwartet?
+    validations: { required: true }
+  - type: input
+    id: herkunft
+    attributes:
+      label: Womit wurde die Datei erzeugt?
+      placeholder: SolidWorks 2025, Export als binäres STL
+  - type: input
+    id: groesse
+    attributes:
+      label: Dateigröße und ungefähre Dreieckszahl
+      placeholder: 240 MB, rund 5 Mio. Dreiecke
+  - type: input
+    id: browser
+    attributes:
+      label: Browser und Betriebssystem
+      placeholder: Chrome 141, Windows 11
+    validations: { required: true }
+  - type: textarea
+    id: konsole
+    attributes:
+      label: Meldungen in der Konsole der Entwicklerwerkzeuge
+      render: text

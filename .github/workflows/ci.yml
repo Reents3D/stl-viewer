@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push: { branches: [main] }
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: npm }
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+      # Die Zusage "kein Upload" haengt an einer einzigen Zeile im ausgelieferten
+      # HTML. Faellt sie durch eine Aenderung an der Bauweise weg, merkt das sonst
+      # niemand - die Anwendung funktioniert ohne sie genauso gut. Deshalb prueft
+      # die Pipeline das ARTEFAKT, nicht den Quelltext.
+      - name: Artefakt pruefen (Richtlinie, externe Ressourcen)
+        run: node scripts/check-artifact.mjs dist
+
+      - name: Keine ausgehenden Aufrufe im Quelltext
+        run: |
+          set -e
+          if grep -rnE '\b(fetch|XMLHttpRequest|sendBeacon|WebSocket|EventSource)\s*\(' src/; then
+            echo "FEHLER: ausgehender Aufruf im Quelltext gefunden."
+            echo "Dieses Projekt darf keine Netzwerkverbindung aufbauen - siehe ADR-001."
+            exit 1
+          fi
+          echo "Keine ausgehenden Aufrufe im Quelltext."

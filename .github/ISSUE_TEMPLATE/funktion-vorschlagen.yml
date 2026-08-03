@@ -1,0 +1,34 @@
+name: Funktion vorschlagen
+description: Etwas fehlt im Betrachter, in der Prüfung oder in der PDF-Dokumentation.
+labels: ["vorschlag"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Welches Problem soll gelöst werden?
+      description: Bitte den Anlass beschreiben, nicht die Lösung — oft gibt es einen kürzeren Weg.
+      placeholder: Ich muss vor der Anfrage wissen, ob die Wandstärke unter 2 mm liegt.
+    validations: { required: true }
+  - type: textarea
+    id: vorschlag
+    attributes:
+      label: Vorgeschlagene Lösung
+  - type: dropdown
+    id: bereich
+    attributes:
+      label: Bereich
+      options:
+        - Datei öffnen
+        - Darstellung und Ansicht
+        - Kennwerte und Befund
+        - Anmerkungen und Messen
+        - PDF-Export
+        - Anderes
+    validations: { required: true }
+  - type: checkboxes
+    id: grundregel
+    attributes:
+      label: Grundregel
+      options:
+        - label: Der Vorschlag kommt ohne Netzwerkverbindung aus (siehe ADR-001 in DECISIONS.md).
+          required: true

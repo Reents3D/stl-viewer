@@ -1,0 +1,310 @@
+@import "tailwindcss";
+
+/* ============================================================================
+   Corporate Design der Reents Technologies GmbH
+   Tokens identisch zum FDM-Materialberater, damit beide Werkzeuge als ein Haus
+   auftreten: Petrol #0C4251, Akzent #88BBD7, Tinte #0B1220, Flaeche #F9FAFB,
+   Rahmen #E5E7EB. Montserrat fuer Ueberschriften, Sora fuer Fliesstext.
+
+   Hinweis: Das Logo traegt noch die aeltere Markenpalette (#204B63/#95C6E5).
+   Das ist gewollt - Logos werden nicht umgefaerbt.
+   ========================================================================== */
+
+@font-face {
+  font-family: "Montserrat";
+  src: url("./fonts/montserrat-var.woff2") format("woff2-variations");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Sora";
+  src: url("./fonts/sora-var.woff2") format("woff2-variations");
+  font-weight: 100 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --color-petrol-50: #eef4f6;
+  --color-petrol-100: #d5e4e9;
+  --color-petrol-200: #a9c7d1;
+  --color-petrol-300: #88bbd7; /* Akzent-Hellblau aus dem CD */
+  --color-petrol-400: #4d8298;
+  --color-petrol-500: #2a6377;
+  --color-petrol-600: #164e62;
+  --color-petrol-700: #0c4251; /* Primaerfarbe */
+  --color-petrol-800: #093442;
+  --color-petrol-900: #072731;
+
+  --color-ink: #0b1220;
+  --color-inksoft: #4b5563;
+  --color-canvas: #f9fafb;
+  --color-hairline: #e5e7eb;
+
+  /* Befundfarben bewusst ausserhalb der Markentoene - eine Ampel in
+     Petrol/Hellblau ist als Bewertung nicht lesbar. */
+  --color-good: #14794a;
+  --color-ok: #a86a00;
+  --color-bad: #b3261e;
+
+  --font-sans: Sora, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: Montserrat, ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  :root {
+    color-scheme: light dark;
+  }
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* Diese Anwendung SCROLLT NICHT. Sie ist ein Werkzeugfenster: Kopfzeile,
+     Zeichenflaeche, Seitenleiste - jeder Bereich verwaltet sein eigenes
+     Ueberlaufverhalten. Ein scrollendes <body> wuerde beim Ziehen im 3D-Fenster
+     auf Tablets die ganze Seite mitziehen. */
+  html,
+  body,
+  #root {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  body {
+    background: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    /* Verhindert, dass ein Wisch im Modell die Seite zurueckblaettert. */
+    overscroll-behavior: none;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.015em;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    body {
+      background: #070e18;
+      color: #e8edf2;
+    }
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-petrol-400);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  ::selection {
+    background: #88bbd7;
+    color: #0b1220;
+  }
+
+  /* Schlanke Bildlaufleisten in den Seitenleisten - die breite Voreinstellung
+     frisst in einer 320-px-Spalte spuerbar Platz. */
+  .scroll-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-petrol-200) transparent;
+  }
+  @media (prefers-color-scheme: dark) {
+    .scroll-thin {
+      scrollbar-color: #24384a transparent;
+    }
+  }
+}
+
+@layer components {
+  .surface {
+    background: #fff;
+    border: 1px solid var(--color-hairline);
+    border-radius: 12px;
+  }
+
+  .muted {
+    color: var(--color-inksoft);
+  }
+  .hl {
+    color: var(--color-petrol-700);
+  }
+
+  /* Sektionslabel im CD: klein, Versalien, gesperrt, Petrol */
+  .eyebrow {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-petrol-700);
+  }
+
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  .hero-gradient {
+    background-image: linear-gradient(100deg, #0c4251 0%, #4d8298 30%, #88bbd7 52%, #0b1220 88%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Geschaetzte Werte muessen als solche sichtbar bleiben - dieselbe Regel wie
+     im Materialberater (ADR-003 dort). Eine Gewichtsangabe ohne diesen Rahmen
+     wuerde als gemessen gelesen. */
+  .estimated {
+    border: 1px dashed #c08a1a;
+    border-radius: 4px;
+    padding: 0 4px;
+    margin: 0 -4px;
+  }
+
+  /* Zahlenfeld in der Kennwerteliste: Ziffern muessen untereinander fluchten,
+     sonst tanzt die Spalte beim Drehen des Modells (Live-Messwerte). */
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .surface {
+      background: #0e1725;
+      border-color: #1e2b3d;
+    }
+    .muted {
+      color: #93a1b2;
+    }
+    .hl,
+    .eyebrow {
+      color: #88bbd7;
+    }
+    .hero-gradient {
+      background-image: linear-gradient(100deg, #88bbd7 0%, #a9c7d1 38%, #e8edf2 88%);
+    }
+  }
+}
+
+@layer components {
+  /* ------------------------------------------------------------ Zeichenflaeche */
+
+  /* Der Ablagebereich liegt ueber der GESAMTEN Anwendung, nicht nur ueber dem
+     3D-Fenster. Wer eine Datei hineinzieht, zielt nicht - er laesst los. Ein
+     Ablagebereich, den man treffen muss, ist ein Bedienfehler in Wartestellung. */
+  .dropveil {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: grid;
+    place-items: center;
+    background: color-mix(in srgb, var(--color-petrol-700) 78%, transparent);
+    backdrop-filter: blur(3px);
+  }
+  .dropveil-frame {
+    border: 3px dashed var(--color-petrol-300);
+    border-radius: 20px;
+    padding: 3rem 4rem;
+    text-align: center;
+    color: #fff;
+  }
+
+  /* Anmerkungsmarke am Modell. Position setzt der Viewer per Stilattribut -
+     deshalb braucht die Richtlinie style-src 'unsafe-inline'. */
+  .pin {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 12px;
+    color: #fff;
+    background: var(--color-petrol-700);
+    border: 2px solid #fff;
+    box-shadow: 0 1px 6px rgb(0 0 0 / 45%);
+    cursor: pointer;
+    user-select: none;
+    /* pointer-events wird je Marke gesetzt: verdeckte Marken duerfen keine
+       Klicks abfangen, die eigentlich dem Modell gelten. */
+  }
+  .pin[data-active="true"] {
+    background: var(--color-petrol-300);
+    color: var(--color-ink);
+    transform: translate(-50%, -50%) scale(1.15);
+  }
+  .pin[data-behind="true"] {
+    opacity: 0.35;
+  }
+
+  /* Messpunkt und Massband */
+  .measure-label {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    background: var(--color-ink);
+    color: #fff;
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    padding: 2px 6px;
+    border-radius: 5px;
+    white-space: nowrap;
+    pointer-events: none;
+    box-shadow: 0 1px 5px rgb(0 0 0 / 40%);
+  }
+
+  /* Bedienleiste ueber dem 3D-Fenster */
+  .toolbtn {
+    display: inline-grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    color: var(--color-inksoft);
+    transition:
+      background-color 0.12s,
+      color 0.12s;
+  }
+  .toolbtn:hover {
+    background: var(--color-petrol-50);
+    color: var(--color-petrol-700);
+  }
+  .toolbtn[aria-pressed="true"] {
+    background: var(--color-petrol-700);
+    color: #fff;
+  }
+  @media (prefers-color-scheme: dark) {
+    .toolbtn:hover {
+      background: rgb(255 255 255 / 8%);
+      color: var(--color-petrol-300);
+    }
+    .toolbtn[aria-pressed="true"] {
+      background: var(--color-petrol-300);
+      color: var(--color-ink);
+    }
+  }
+
+  /* Schieberegler im CD */
+  input[type="range"] {
+    accent-color: var(--color-petrol-700);
+  }
+  @media (prefers-color-scheme: dark) {
+    input[type="range"] {
+      accent-color: var(--color-petrol-300);
+    }
+  }
+}

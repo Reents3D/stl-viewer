@@ -1,0 +1,19 @@
+{
+  "name": "STL-Betrachter — Reents3D",
+  "short_name": "STL-Betrachter",
+  "description": "STL-Datei im Browser ansehen, vermessen, kommentieren und als PDF dokumentieren. Ohne Upload.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F9FAFB",
+  "theme_color": "#0C4251",
+  "lang": "de",
+  "icons": [
+    {
+      "src": "./favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
