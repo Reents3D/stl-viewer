@@ -25,6 +25,12 @@ bliebe leer.
 
 ---
 
+> **Nachtrag zu ADR-001:** Für die STEP-Unterstützung wird die Richtlinie
+> gelockert — siehe [ADR-013](#adr-013--step-unterstützung-kostet-die-absolute-form-der-zusage).
+> Beschlossen am 2026-08-03, noch nicht umgesetzt.
+
+---
+
 ## ADR-002 — Eigener STL-Parser statt `STLLoader` aus three.js
 
 **Entscheidung.** Parser und Geometrieanalyse sind selbst geschrieben und laufen
@@ -70,9 +76,18 @@ sie gut. Aus einer einzelnen Zahl wäre nicht ablesbar, in welchem der beiden F�
 sich befindet. Aus einer weiten Spanne schon: Dann entscheidet die Wandstärke, und dann
 muss der Slicer ran.
 
-**Ergänzend.** Ab dem Dreifachen Abstand zwischen den Grenzen, oder bei einem
-Oberfläche-zu-Volumen-Verhältnis über dem Vierfachen einer Kugel gleichen Volumens,
-weist die Oberfläche ausdrücklich darauf hin.
+**Ergänzend.** Liegt das Verhältnis von Oberfläche zu Volumen über dem Vierfachen einer
+Kugel gleichen Volumens, weist die Oberfläche ausdrücklich darauf hin und nennt den
+Faktor.
+
+**Korrektur vom 2026-08-03.** Bis dahin löste zusätzlich ein Abstand der beiden Grenzen
+über dem Dreifachen die Warnung aus. Das war falsch: Dieser Abstand ist exakt
+`100 ÷ Füllgrad` und hängt allein am Schieberegler — bei der Voreinstellung von 20 %
+ergibt er immer 5. Die Warnung erschien damit unter **jedem** Bauteil, auch unter einem
+massiven Würfel. Eine Warnung, die immer da ist, wird nach dem dritten Modell nicht mehr
+gelesen. Aufgefallen ist es an einem Fachwerkrahmen, bei dem sie sachlich sogar zutraf.
+Jetzt entscheidet nur noch die Form. Tests halten die Schwelle fest: Würfel 1,24
+schweigt, Blech 5,8 warnt.
 
 ---
 
@@ -185,3 +200,52 @@ eine neu gesetzte Anmerkung bewegt die Kamera nicht. Ohne einen ausdrücklichen 
 blieb die frische Marke in der linken oberen Ecke liegen, bis der Kunde das Modell
 zufällig einmal drehte. In der Handprüfung aufgefallen, seitdem stößt ein Effekt das
 Neuzeichnen an.
+
+---
+
+## ADR-013 — STEP-Unterstützung kostet die absolute Form der Zusage
+
+**Status:** beschlossen am 2026-08-03, noch nicht umgesetzt.
+
+**Entscheidung.** STEP-Dateien werden über `occt-import-js` (OpenCascade als
+WebAssembly, LGPL-2.1) im Browser tesselliert. Dafür wird die
+Inhaltssicherheitsrichtlinie an zwei Stellen gelockert:
+
+```
+script-src  'self' 'wasm-unsafe-eval'     (statt nur 'self')
+connect-src 'self'                        (statt 'none')
+```
+
+**Warum beides nötig ist — gemessen, nicht angenommen.** Auf der ausgelieferten
+Seite mit der bisherigen Richtlinie:
+
+```
+new WebAssembly.Module(bytes)  →  CompileError: Compiling or instantiating
+                                  WebAssembly module violates CSP
+fetch('./favicon.svg')         →  TypeError: Failed to fetch
+```
+
+Das Kompilieren von WebAssembly verlangt `'wasm-unsafe-eval'`. Das Nachladen der
+7,4 MB großen `.wasm`-Datei läuft über `fetch` und damit über `connect-src`.
+
+**Was sich an der Zusage ändert.** Aus „der Browser kann nichts senden" wird
+„der Browser darf nur mit dem Server reden, von dem die Seite kam — und der
+liefert Dateien aus, er nimmt keine entgegen". Sachlich fast gleich stark, als
+Satz schwächer. Die Vorführung bleibt: Beim Öffnen einer STL passiert im
+Netzwerk-Reiter weiterhin nichts; erst eine STEP-Datei löst genau eine Anfrage
+aus, an die eigene Herkunft, für eine statische Datei.
+
+**Warum nicht einbetten und `'none'` behalten.** Technisch möglich: die
+`.wasm` als Base64 in ein JS-Bündel legen, dann entfällt der `fetch`. Dagegen
+sprechen zwei Dinge. Der Download wächst von 7,4 auf rund 10 MB, weil Base64
+ein Drittel aufschlägt. Und die LGPL verlangt, dass sich die Bibliothek
+austauschen lässt — als eigene Datei ist das selbstverständlich, eingebacken
+ins Bündel müsste man den Austausch eigens ermöglichen und dokumentieren.
+`'wasm-unsafe-eval'` wäre auch dann nötig.
+
+**Nachgelagerte Ehrlichkeitspflicht.** Ein STEP ist kein Netz, sondern eine
+exakte Flächenbeschreibung. Volumen, Oberfläche und Befund beziehen sich nach
+der Tessellierung auf den ERSATZ, nicht auf das Original — ein Zylinder wird zum
+Vieleck. Das muss in der Oberfläche stehen, sobald eine STEP-Datei geöffnet ist,
+und nicht nur hier. Positiv: STEP trägt seine Einheit in der Datei, die
+Einheitenwahl beim Öffnen entfällt dort.
