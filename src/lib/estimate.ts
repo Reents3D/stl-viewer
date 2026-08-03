@@ -50,23 +50,57 @@ export function estimateMass(
 /**
  * Wie weit liegen die beiden Grenzen auseinander?
  *
- * Ab dem Dreifachen wird in der Oberflaeche ausdruecklich darauf hingewiesen,
- * dass die Zahl fuer eine Kalkulation nicht taugt.
+ * ACHTUNG — das ist KEIN Hinweis auf die Bauteilform. Der Wert ist exakt
+ * `100 / Fuellgrad` und haengt ausschliesslich am Schieberegler: bei 20 %
+ * kommt immer 5 heraus, bei einem Wuerfel wie bei einem Gitter.
+ *
+ * Bis 2026-08-03 stand er in der Bedingung fuer die Warnung "duennwandig".
+ * Folge: Bei der Voreinstellung von 20 % Fuellung erschien die Warnung unter
+ * JEDEM Bauteil. Eine Warnung, die immer da ist, ist keine Warnung mehr — sie
+ * wird nach dem dritten Modell nicht mehr gelesen. Aufgefallen an einem
+ * Fachwerkrahmen, bei dem sie sachlich sogar zutraf, aber mit dem falschen Wort.
+ *
+ * Der Wert bleibt, weil er fuer die Anzeige der Spanne selbst gebraucht wird.
+ * Fuer die Frage "ist die untere Grenze belastbar" ist `compactness` zustaendig.
  */
 export function spreadFactor(estimate: MassEstimate): number {
   return estimate.filledGrams > 0 ? estimate.solidGrams / estimate.filledGrams : Infinity;
 }
 
 /**
- * Verhaeltnis von Oberflaeche zu Volumen, normiert auf eine Kugel gleichen Volumens.
+ * Oberflaeche im Verhaeltnis zum Volumen, normiert auf eine Kugel gleichen Volumens.
  *
- * 1 = kompakt wie eine Kugel. Grosse Werte bedeuten duennwandig oder stark
- * zerklueftet — genau die Faelle, in denen die lineare Fuellgradrechnung versagt.
- * Damit laesst sich die Warnung begruenden, statt sie zu raten.
+ * Die Kugel ist der kompakteste Koerper ueberhaupt, deshalb ist sie der Nullpunkt:
+ *
+ *   Kugel                        1,0
+ *   Wuerfel                      1,2
+ *   Platte 100 x 100 x 2 mm      5,8
+ *   Fachwerk aus schlanken Staeben  ~9
+ *   Gehaeuse mit 1 mm Wand      ~16
+ *
+ * Je hoeher der Wert, desto mehr besteht das Bauteil aus Rand statt aus Inhalt —
+ * und desto weniger sagt der Fuellgrad ueber die Masse aus, weil ein Slicer den
+ * Rand ohnehin voll ausdruckt. Das ist die EINZIGE Groesse hier, die etwas ueber
+ * die Form aussagt.
  */
 export function compactness(volumeMm3: number, areaMm2: number): number {
   if (volumeMm3 <= 0 || areaMm2 <= 0) return Infinity;
   const sphereRadius = Math.cbrt((3 * volumeMm3) / (4 * Math.PI));
   const sphereArea = 4 * Math.PI * sphereRadius * sphereRadius;
   return areaMm2 / sphereArea;
+}
+
+/**
+ * Ab hier ist die untere Grenze der Massenschaetzung nicht mehr belastbar.
+ *
+ * 4 liegt oberhalb aller kompakten Formen (Wuerfel 1,2, Zylinder ~1,3, auch ein
+ * kraeftiger Winkel bleibt darunter) und unterhalb der Faelle, in denen der Rand
+ * das Bauteil ausmacht. Eine duenne Platte liegt bei 5,8 und wird damit erfasst —
+ * zu Recht: Bei 2 mm Dicke besteht sie nur aus Boden- und Deckschicht, der
+ * Fuellgrad aendert an ihrer Masse praktisch nichts.
+ */
+export const FILIGREE_THRESHOLD = 4;
+
+export function isFiligree(volumeMm3: number, areaMm2: number): boolean {
+  return compactness(volumeMm3, areaMm2) > FILIGREE_THRESHOLD;
 }

@@ -10,7 +10,7 @@
 import { MATERIALS, materialById, INFILL_PRESETS } from "../../config/materials";
 import { SITE, trackedUrl } from "../../config/site";
 import type { Lang, T } from "../../i18n";
-import { compactness, estimateMass, spreadFactor } from "../../lib/estimate";
+import { compactness, estimateMass, FILIGREE_THRESHOLD } from "../../lib/estimate";
 import * as fmt from "../../lib/format";
 import { fitsInBuildVolume } from "../../stl/geometry";
 import type { LoadedModel } from "../../stl/load";
@@ -43,7 +43,10 @@ export function InspectPanel({
   const estimate = estimateMass(stats.volumeMm3, material.density, material.confidence, infill);
   const volume = SITE.buildVolumes.find((v) => v.id === buildVolumeId) ?? SITE.buildVolumes[0];
   const fit = fitsInBuildVolume(size, volume);
-  const thinWalled = spreadFactor(estimate) > 3 || compactness(stats.volumeMm3, stats.areaMm2) > 4;
+  // Nur die Form entscheidet, nicht der Fuellgrad — siehe Kommentar an
+  // spreadFactor in lib/estimate.ts.
+  const surfaceRatio = compactness(stats.volumeMm3, stats.areaMm2);
+  const filigree = surfaceRatio > FILIGREE_THRESHOLD;
 
   return (
     <>
@@ -134,8 +137,10 @@ export function InspectPanel({
               {t("mass.lowLabel", { p: infill })} → {t("mass.highLabel")}{" "}
               <ConfidenceMark level={material.confidence} label={t(`confidence.${material.confidence}`)} />
             </p>
-            {thinWalled && (
-              <p className="text-[11px] text-ok mt-2 leading-snug">{t("mass.spreadWarning")}</p>
+            {filigree && (
+              <p className="text-[11px] text-ok mt-2 leading-snug">
+                {t("mass.filigree", { f: fmt.num(surfaceRatio, lang, 1) })}
+              </p>
             )}
             <p className="text-[11px] muted mt-2 leading-snug">{t("mass.note")}</p>
           </div>

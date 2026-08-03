@@ -21,7 +21,7 @@ import { jsPDF } from "jspdf";
 import { MATERIALS, type MaterialDensity } from "../config/materials";
 import { SITE, type BuildVolume } from "../config/site";
 import type { Lang, T } from "../i18n";
-import { estimateMass, spreadFactor } from "../lib/estimate";
+import { compactness, estimateMass, FILIGREE_THRESHOLD } from "../lib/estimate";
 import * as fmt from "../lib/format";
 import type { LoadedModel } from "../stl/load";
 import type { FitResult } from "../stl/geometry";
@@ -61,8 +61,10 @@ export interface PdfInput {
   standardViews: ReadonlyArray<{ view: StandardView; image: string }> | null;
   turntables: ReadonlyArray<PdfTurntable>;
   annotations: ReadonlyArray<Annotation>;
-  /** Anmerkungs-Id auf Bild aus dem gespeicherten Blickwinkel. */
+  /** Anmerkungs-Id auf Bild aus dem gespeicherten Blickwinkel, mit eigener Marke. */
   annotationImages: ReadonlyMap<string, string>;
+  /** Ein Bild mit ALLEN Marken — steht vor den Einzelseiten. */
+  annotationOverview: string | null;
   material: MaterialDensity;
   infill: number;
   buildVolume: BuildVolume;
@@ -356,7 +358,17 @@ class Layout {
       { strong: true },
     );
     this.paragraph(this.t("mass.note"), 7.5);
-    if (spreadFactor(estimate) > 3) this.paragraph(this.t("mass.spreadWarning"), 7.5, PETROL);
+    // Nur die Form entscheidet. Die frueher hier stehende Bedingung
+    // `spreadFactor > 3` haengt allein am Fuellgrad und stand deshalb bei der
+    // Voreinstellung von 20 % unter jedem Bauteil.
+    const surfaceRatio = compactness(stats.volumeMm3, stats.areaMm2);
+    if (surfaceRatio > FILIGREE_THRESHOLD) {
+      this.paragraph(
+        this.t("mass.filigree", { f: fmt.num(surfaceRatio, this.lang, 1) }),
+        7.5,
+        PETROL,
+      );
+    }
 
     /* -------------------------------------------------------- Bauraum */
 
@@ -523,8 +535,30 @@ class Layout {
     this.newPage();
     this.sectionTitle(this.t("pdf.sectionAnnotations"));
 
-    const { annotations, annotationImages } = this.input;
+    const { annotations, annotationImages, annotationOverview } = this.input;
     const d = this.doc;
+
+    // Uebersicht zuerst: welche Stellen sind betroffen. Ohne sie muesste der
+    // Leser sich aus einzelnen Nahaufnahmen zusammensetzen, wo am Bauteil er
+    // sich gerade befindet.
+    if (annotationOverview) {
+      const width = CONTENT_WIDTH * 0.72;
+      const height = width / SHOT_ASPECT;
+      const x = MARGIN.left + (CONTENT_WIDTH - width) / 2;
+      d.addImage(annotationOverview, "JPEG", x, this.y, width, height);
+      d.setDrawColor(...HAIRLINE);
+      d.setLineWidth(0.2);
+      d.rect(x, this.y, width, height);
+      this.y += height + 3;
+
+      d.setFont("helvetica", "normal");
+      d.setFontSize(7.5);
+      d.setTextColor(...MUTED);
+      d.text(this.t("pdf.annotationOverview", { n: annotations.length }), PAGE.width / 2, this.y, {
+        align: "center",
+      });
+      this.y += 8;
+    }
 
     for (const annotation of annotations) {
       const image = annotationImages.get(annotation.id) ?? null;

@@ -9,14 +9,15 @@
  */
 
 import type { jsPDF } from "jspdf";
+import { Vector3 } from "three";
 
 import type { MaterialDensity } from "../config/materials";
 import type { BuildVolume } from "../config/site";
 import type { Lang, T } from "../i18n";
 import type { FitResult } from "../stl/geometry";
 import type { LoadedModel } from "../stl/load";
-import type { ModelScene } from "../viewer/scene";
-import type { Annotation, Axis, StandardView } from "../viewer/types";
+import type { CaptureMarker, ModelScene } from "../viewer/scene";
+import { ANNOTATION_CATEGORIES, type Annotation, type Axis, type StandardView } from "../viewer/types";
 import { rasterizeSvg } from "./files";
 import { buildPdf, SHOT_ASPECT, type PdfTurntable } from "./pdf";
 import { countShots } from "./pdf-layout";
@@ -50,12 +51,29 @@ export const DEFAULT_EXPORT_OPTIONS: ExportOptions = {
 };
 
 export function plannedShots(options: ExportOptions, annotationCount: number): number {
-  return countShots({
-    axes: options.axes.length,
-    perAxis: options.perAxis,
-    standardViews: options.standardViews,
-    annotations: options.annotationPages ? annotationCount : 0,
-  });
+  const withAnnotations = options.annotationPages && annotationCount > 0;
+  return (
+    countShots({
+      axes: options.axes.length,
+      perAxis: options.perAxis,
+      standardViews: options.standardViews,
+      annotations: withAnnotations ? annotationCount : 0,
+    }) +
+    // Eine zusaetzliche Aufnahme: die Uebersicht mit ALLEN Marken.
+    (withAnnotations ? 1 : 0)
+  );
+}
+
+/** Marke einer Anmerkung, wie sie in die Aufnahme gezeichnet wird. */
+function toMarker(annotation: Annotation, faded = false): CaptureMarker {
+  const category =
+    ANNOTATION_CATEGORIES.find((c) => c.id === annotation.category) ?? ANNOTATION_CATEGORIES[0];
+  return {
+    point: new Vector3(annotation.point.x, annotation.point.y, annotation.point.z),
+    label: String(annotation.number),
+    color: category.color,
+    faded,
+  };
 }
 
 export interface ExportContext {
@@ -138,12 +156,33 @@ export async function runPdfExport(context: ExportContext): Promise<jsPDF> {
     /* ------------------------------------------------------------- Anmerkungen */
 
     const annotationImages = new Map<string, string>();
-    if (options.annotationPages) {
+    let annotationOverview: string | null = null;
+
+    if (options.annotationPages && annotations.length > 0) {
+      // Zuerst die Uebersicht: alle Marken in einem Bild, aus der Ansicht, die
+      // der Kunde zuletzt eingestellt hatte. Sie beantwortet die Frage, die vor
+      // jeder Einzelseite kommt — welche Stellen sind ueberhaupt betroffen.
+      guard();
+      annotationOverview = scene.capture({
+        ...shot,
+        clean: true,
+        markers: annotations.map((a) => toMarker(a)),
+      });
+      step();
+      await nextFrame();
+
       for (const annotation of annotations) {
         guard();
+        // Nur die EIGENE Marke. Die uebrigen blass mitzuzeichnen gaebe Kontext,
+        // wuerde auf einem 78 mm breiten Bild aber genau die Eindeutigkeit
+        // kosten, um die es auf dieser Seite geht.
         annotationImages.set(
           annotation.id,
-          scene.captureFromCamera(annotation.camera, { ...shot, clean: true }),
+          scene.captureFromCamera(annotation.camera, {
+            ...shot,
+            clean: true,
+            markers: [toMarker(annotation)],
+          }),
         );
         step();
         await nextFrame();
@@ -159,6 +198,7 @@ export async function runPdfExport(context: ExportContext): Promise<jsPDF> {
       turntables,
       annotations,
       annotationImages,
+      annotationOverview,
       material: context.material,
       infill: context.infill,
       buildVolume: context.buildVolume,

@@ -19,18 +19,31 @@ export function Header({
   onLang,
   t,
   onNewFile,
+  onHome,
   hasModel,
 }: {
   lang: Lang;
   onLang: (lang: Lang) => void;
   t: T;
   onNewFile: () => void;
+  onHome: () => void;
   hasModel: boolean;
 }) {
   return (
     <header className="shrink-0 bg-white border-b border-hairline dark:bg-[#0B121F] dark:border-[#1E2B3D]">
       <div className="h-14 px-4 flex items-center gap-4">
-        <a href={SITE.urls.primary} target="_blank" rel="noopener" className="shrink-0">
+        {/* Das Logo fuehrt zum Anfang, nicht auf die Unternehmenswebsite.
+            Oben links zurueck zum Start ist die Bewegung, die jeder aus jeder
+            anderen Anwendung mitbringt; ein Sprung auf reents3d.de an dieser
+            Stelle reisst den Kunden mitten in der Arbeit aus dem Werkzeug.
+            Der Weg zur Website steht daneben als "Projekt anfragen" und im Fuss. */}
+        <button
+          type="button"
+          onClick={onHome}
+          title={hasModel ? t("ui.home") : undefined}
+          aria-label={hasModel ? t("ui.home") : SITE.legalEntity}
+          className="shrink-0 rounded-lg transition-opacity hover:opacity-70"
+        >
           {/* Zwei Dateien statt eines CSS-Filters: Der Filter rechnet das Weiss
               aus und verliert dabei die Zweifarbigkeit des Zeichens. */}
           <img
@@ -48,7 +61,7 @@ export function Header({
             width={200}
             height={36}
           />
-        </a>
+        </button>
 
         <div className="hidden sm:block border-l border-hairline dark:border-[#1E2B3D] pl-4 min-w-0">
           <h1 className="font-display font-bold text-sm leading-tight truncate">{t("app.name")}</h1>

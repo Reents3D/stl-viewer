@@ -293,27 +293,34 @@ export function Viewer(props: ViewerProps) {
       {/* ------------------------------------------------------------ Werkzeug */}
       {/* Oben links, weil dort der Blick zuerst hinfaellt und weil die
           Ansichtsknoepfe rechts stehen — zwei Gruppen, die nichts miteinander
-          zu tun haben, gehoeren nicht nebeneinander. */}
-      <div className="absolute top-3 left-3 flex gap-1 surface p-1">
-        {(
-          [
-            ["orbit", ICONS.orbit, t("tool.orbit")],
-            ["annotate", ICONS.pin, t("tool.annotate")],
-            ["measure", ICONS.ruler, t("tool.measure")],
-          ] as const
-        ).map(([mode, icon, label]) => (
-          <button
-            key={mode}
-            type="button"
-            className="toolbtn"
-            aria-pressed={tool === mode}
-            aria-label={label}
-            title={label}
-            onClick={() => onTool(mode)}
-          >
-            <Icon path={icon} />
-          </button>
-        ))}
+          zu tun haben, gehoeren nicht nebeneinander.
+
+          Untereinander mit Beschriftung statt drei Symbole in einer Reihe: Ein
+          Kunde, der eine Anmerkung setzen will, muss nicht raten, welches der
+          drei Zeichen dafuer zustaendig ist. Die Ueberschrift sagt zusaetzlich,
+          dass es sich um eine WAHL handelt und nicht um drei Schaltflaechen. */}
+      <div className="absolute top-3 left-3 surface p-1 w-max min-w-[9.5rem]">
+        <p className="eyebrow px-2 pt-1 pb-1.5 text-[10px]">{t("tool.title")}</p>
+        <div className="flex flex-col gap-0.5">
+          {(
+            [
+              ["orbit", ICONS.orbit, t("tool.orbit")],
+              ["annotate", ICONS.pin, t("tool.annotate")],
+              ["measure", ICONS.ruler, t("tool.measure")],
+            ] as const
+          ).map(([mode, icon, label]) => (
+            <button
+              key={mode}
+              type="button"
+              className="toolrow"
+              aria-pressed={tool === mode}
+              onClick={() => onTool(mode)}
+            >
+              <Icon path={icon} className="w-4 h-4 shrink-0" />
+              <span>{label}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* ---------------------------------------------------------- Ansichten */}

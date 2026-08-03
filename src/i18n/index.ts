@@ -132,9 +132,9 @@ const S = {
     de: "Lineare Näherung ohne Wandstärken und ohne Stützmaterial. Für die Größenordnung, nicht für die Kalkulation.",
     en: "Linear approximation without wall thickness or support material. For orders of magnitude, not for costing.",
   },
-  "mass.spreadWarning": {
-    de: "Das Bauteil ist dünnwandig — die untere Grenze liegt deutlich zu niedrig. Verbindlich rechnet nur ein Slicer.",
-    en: "The part is thin-walled — the lower bound is far too low. Only a slicer gives a binding figure.",
+  "mass.filigree": {
+    de: "Viel Oberfläche im Verhältnis zum Volumen (Faktor {f} gegenüber einer Kugel gleichen Volumens). Bei dünnen Wänden, Rippen, Streben oder Gittern besteht das Bauteil überwiegend aus Rand — den druckt der Slicer voll aus, unabhängig vom Füllgrad. Die untere Grenze liegt dann zu niedrig.",
+    en: "Large surface area relative to volume (factor {f} compared with a sphere of equal volume). With thin walls, ribs, struts or lattices the part consists mostly of perimeter — which the slicer prints solid regardless of infill. The lower bound is then too low.",
   },
   "mass.densitySource": {
     de: "Dichte aus dem FDM-Materialberater",
@@ -168,6 +168,7 @@ const S = {
   },
 
   /* ----------------------------------------------------------------- Werkzeuge */
+  "tool.title": { de: "Werkzeug", en: "Tool" },
   "tool.orbit": { de: "Drehen", en: "Orbit" },
   "tool.annotate": { de: "Anmerkung setzen", en: "Add annotation" },
   "tool.measure": { de: "Messen", en: "Measure" },
@@ -317,6 +318,10 @@ const S = {
   "pdf.sectionTurntable": { de: "Rundumansichten um die {axis}-Achse", en: "All-round views about the {axis} axis" },
   "pdf.sectionAnnotations": { de: "Anmerkungen", en: "Annotations" },
   "pdf.noAnnotations": { de: "Keine Anmerkungen erfasst.", en: "No annotations recorded." },
+  "pdf.annotationOverview": {
+    de: "Übersicht: alle {n} markierten Stellen am Modell",
+    en: "Overview: all {n} marked spots on the model",
+  },
   "pdf.disclaimer": {
     de: "Alle Werte wurden aus der übergebenen STL-Datei berechnet. Sie beschreiben die Geometrie der Datei, nicht ein gefertigtes Bauteil, und ersetzen keine Bauteilqualifizierung. Gewichtsangaben sind Schätzungen ohne Wandstärken und Stützmaterial.",
     en: "All values were computed from the supplied STL file. They describe the geometry of the file, not a manufactured part, and do not replace part qualification. Weights are estimates without wall thickness or support material.",
@@ -369,6 +374,11 @@ const S = {
   "ui.yes": { de: "Ja", en: "Yes" },
   "ui.no": { de: "Nein", en: "No" },
   "ui.newFile": { de: "Andere Datei", en: "Another file" },
+  "ui.home": { de: "Zurück zum Anfang — neue Datei öffnen", en: "Back to the start — open another file" },
+  "ui.discardConfirm": {
+    de: "{n} Anmerkungen gehen verloren, wenn Sie das Modell schließen. Sie lassen sich unter „Anmerkungen“ vorher sichern. Trotzdem fortfahren?",
+    en: "{n} annotations will be lost if you close the model. You can save them first under “Annotations”. Continue anyway?",
+  },
   "ui.shortcuts": { de: "Tastenkürzel", en: "Keyboard shortcuts" },
   "ui.of": { de: "von", en: "of" },
 } satisfies Record<string, Entry>;

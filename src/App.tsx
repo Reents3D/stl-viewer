@@ -125,10 +125,43 @@ export default function App() {
     [t, unit],
   );
 
+  /**
+   * Rueckfrage, bevor gesetzte Anmerkungen verschwinden.
+   *
+   * Sie sind Handarbeit und liegen nirgends sonst — kein Server, keine
+   * Wiederherstellung. Ein Klick aufs Logo darf sie nicht stillschweigend
+   * wegwerfen. Ohne Anmerkungen gibt es nichts zu bestaetigen, dann faellt die
+   * Frage weg.
+   */
+  const confirmDiscard = useCallback((): boolean => {
+    if (annotations.length === 0) return true;
+    return window.confirm(t("ui.discardConfirm", { n: annotations.length }));
+  }, [annotations.length, t]);
+
   const pickStl = useCallback(async () => {
+    if (!confirmDiscard()) return;
     const file = await pickFile(".stl,model/stl,application/sla");
     if (file) openFiles([file]);
-  }, [openFiles]);
+  }, [confirmDiscard, openFiles]);
+
+  /** Zurueck zur Startseite — bereit fuer die naechste Datei. */
+  const goHome = useCallback(() => {
+    if (!confirmDiscard()) return;
+    loadRef.current?.cancel();
+    cancelExportRef.current = true;
+    setModel(null);
+    setAnnotations([]);
+    setMeasurements([]);
+    setPendingPoint(null);
+    setActiveId(null);
+    annotationCounter.current = 0;
+    setTool("orbit");
+    setTab("inspect");
+    setError(null);
+    setExportProgress(null);
+    // Darstellungseinstellungen bleiben absichtlich stehen: Wer sich Farbe und
+    // Hintergrund eingerichtet hat, will sie beim naechsten Modell wiederhaben.
+  }, [confirmDiscard]);
 
   /* ------------------------------------------------------- Ziehen und Ablegen */
 
@@ -352,6 +385,7 @@ export default function App() {
         t={t}
         hasModel={model !== null}
         onNewFile={pickStl}
+        onHome={goHome}
       />
 
       {model === null ? (

@@ -36,6 +36,24 @@ export interface CaptureOptions {
   /** Gitter, Achsen und Bauraum ausblenden — fuer Dokumentationsbilder. */
   clean?: boolean;
   transparent?: boolean;
+  /**
+   * Marken, die IN das Bild gezeichnet werden.
+   *
+   * Ohne sie zeigte die Anmerkungsseite im PDF nur das Bauteil, und die Nummer
+   * stand daneben im Text — der Leser sah das Modell, aber nicht die Stelle.
+   * Genau dafuer ist die Anmerkung da.
+   */
+  markers?: readonly CaptureMarker[];
+}
+
+export interface CaptureMarker {
+  /** Punkt in Modellkoordinaten. */
+  point: THREE.Vector3;
+  label: string;
+  /** Farbe der Kategorie. */
+  color: string;
+  /** Volle Staerke fuer die gemeinte Stelle, blass fuer die uebrigen. */
+  faded?: boolean;
 }
 
 const DEG = Math.PI / 180;
@@ -543,7 +561,7 @@ export class ModelScene {
    * Bild, und zwar zuverlaessig erst auf fremden Rechnern.
    */
   capture(options: CaptureOptions): string {
-    const { width, height, clean = false, transparent = false } = options;
+    const { width, height, clean = false, transparent = false, markers } = options;
     const previousSize = new THREE.Vector2();
     this.renderer.getSize(previousSize);
     const previousRatio = this.renderer.getPixelRatio();
@@ -557,7 +575,32 @@ export class ModelScene {
     this.renderer.setSize(width, height, false);
     this.updateProjection(width / height);
     this.renderer.render(this.scene, this.camera as THREE.PerspectiveCamera);
-    const dataUrl = this.renderer.domElement.toDataURL(transparent ? "image/png" : "image/jpeg", 0.92);
+
+    const mime = transparent ? "image/png" : "image/jpeg";
+    let dataUrl: string;
+
+    if (markers && markers.length > 0) {
+      // Ueber eine zweite, zweidimensionale Flaeche gelegt statt als Objekt in
+      // die Szene gehaengt: Eine Marke soll IMMER gleich gross sein, egal wie
+      // weit die Kamera weg steht, und sie soll nie im Bauteil verschwinden.
+      // Beides waere mit einem Sprite in der Szene ein Kampf gegen die
+      // Perspektive und den Tiefenpuffer.
+      const overlay = document.createElement("canvas");
+      overlay.width = width;
+      overlay.height = height;
+      const ctx = overlay.getContext("2d");
+      if (ctx) {
+        // drawImage liest denselben Zeichenpuffer wie toDataURL und muss
+        // deshalb ebenso im selben Durchlauf passieren.
+        ctx.drawImage(this.renderer.domElement, 0, 0, width, height);
+        for (const marker of markers) this.drawMarker(ctx, marker, width, height);
+        dataUrl = overlay.toDataURL(mime, 0.92);
+      } else {
+        dataUrl = this.renderer.domElement.toDataURL(mime, 0.92);
+      }
+    } else {
+      dataUrl = this.renderer.domElement.toDataURL(mime, 0.92);
+    }
 
     this.helpers.visible = helpersVisible;
     this.scene.background = previousBackground;
@@ -567,6 +610,92 @@ export class ModelScene {
     this.invalidate();
 
     return dataUrl;
+  }
+
+  /**
+   * Eine Anmerkungsmarke ins Bild zeichnen.
+   *
+   * Die Nummernscheibe sitzt NEBEN dem Punkt, nicht darauf, und ist mit einer
+   * Linie damit verbunden. Direkt auf den Punkt gesetzt wuerde sie genau das
+   * verdecken, worum es geht — bei einer 2 mm schmalen Kante ist die Scheibe
+   * breiter als das Merkmal. Der Punkt selbst bleibt als kleiner Kreis sichtbar.
+   */
+  private drawMarker(
+    ctx: CanvasRenderingContext2D,
+    marker: CaptureMarker,
+    width: number,
+    height: number,
+  ): void {
+    if (!this.mesh) return;
+
+    const world = this.mesh.localToWorld(marker.point.clone());
+    const ndc = world.project(this.camera as THREE.PerspectiveCamera);
+    // Ausserhalb des Sichtkegels wird nichts gezeichnet — eine Marke am
+    // Bildrand, die zu einem Punkt hinter der Kamera gehoert, waere eine Luege.
+    if (ndc.z > 1 || Math.abs(ndc.x) > 1.4 || Math.abs(ndc.y) > 1.4) return;
+
+    const x = ((ndc.x + 1) / 2) * width;
+    const y = ((-ndc.y + 1) / 2) * height;
+
+    // Groesse relativ zum Bild, damit die Marke bei 900 wie bei 2000 Bildpunkten
+    // gleich wirkt.
+    const r = Math.max(11, width * 0.019);
+    const gap = r * 2.4;
+    // Nach oben versetzt, ausser es ist dort kein Platz mehr.
+    const above = y - gap - r > 4;
+    const cy = above ? y - gap : y + gap;
+    const cx = Math.min(Math.max(x, r + 4), width - r - 4);
+
+    ctx.save();
+    ctx.globalAlpha = marker.faded ? 0.45 : 1;
+
+    // Verbindungslinie, weiss unterlegt: auf einem hellen Bauteil waere eine
+    // dunkle Linie unsichtbar, auf einem dunklen eine helle.
+    ctx.lineCap = "round";
+    ctx.strokeStyle = "rgba(255,255,255,0.9)";
+    ctx.lineWidth = r * 0.42;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(cx, cy);
+    ctx.stroke();
+    ctx.strokeStyle = marker.color;
+    ctx.lineWidth = r * 0.2;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(cx, cy);
+    ctx.stroke();
+
+    // Der genaue Punkt.
+    ctx.beginPath();
+    ctx.arc(x, y, r * 0.3, 0, Math.PI * 2);
+    ctx.fillStyle = marker.color;
+    ctx.strokeStyle = "#fff";
+    ctx.lineWidth = r * 0.16;
+    ctx.fill();
+    ctx.stroke();
+
+    // Nummernscheibe.
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fillStyle = marker.color;
+    ctx.shadowColor = "rgba(0,0,0,0.45)";
+    ctx.shadowBlur = r * 0.5;
+    ctx.shadowOffsetY = r * 0.12;
+    ctx.fill();
+    ctx.shadowColor = "transparent";
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetY = 0;
+    ctx.strokeStyle = "#fff";
+    ctx.lineWidth = r * 0.2;
+    ctx.stroke();
+
+    ctx.fillStyle = "#fff";
+    ctx.font = `700 ${Math.round(r * 1.15)}px Montserrat, Arial, sans-serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(marker.label, cx, cy + r * 0.06);
+
+    ctx.restore();
   }
 
   private updateProjection(aspect: number): void {

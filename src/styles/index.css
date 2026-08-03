@@ -267,32 +267,40 @@
     box-shadow: 0 1px 5px rgb(0 0 0 / 40%);
   }
 
-  /* Bedienleiste ueber dem 3D-Fenster */
-  .toolbtn {
-    display: inline-grid;
-    place-items: center;
-    width: 34px;
-    height: 34px;
+  /* Werkzeugwahl ueber dem 3D-Fenster.
+     Zeile statt Knopf: Drei Symbole nebeneinander sahen aufgeraeumt aus und
+     beantworteten die entscheidende Frage nicht — womit setze ich eine
+     Anmerkung? Ein Symbol muss man deuten, eine Beschriftung liest man. */
+  .toolrow {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    width: 100%;
+    padding: 0.4rem 0.6rem;
     border-radius: 9px;
+    font-size: 12px;
+    font-weight: 500;
+    text-align: left;
+    white-space: nowrap;
     color: var(--color-inksoft);
     transition:
       background-color 0.12s,
       color 0.12s;
   }
-  .toolbtn:hover {
+  .toolrow:hover {
     background: var(--color-petrol-50);
     color: var(--color-petrol-700);
   }
-  .toolbtn[aria-pressed="true"] {
+  .toolrow[aria-pressed="true"] {
     background: var(--color-petrol-700);
     color: #fff;
   }
   @media (prefers-color-scheme: dark) {
-    .toolbtn:hover {
+    .toolrow:hover {
       background: rgb(255 255 255 / 8%);
       color: var(--color-petrol-300);
     }
-    .toolbtn[aria-pressed="true"] {
+    .toolrow[aria-pressed="true"] {
       background: var(--color-petrol-300);
       color: var(--color-ink);
     }
