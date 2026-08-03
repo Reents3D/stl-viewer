@@ -8,25 +8,30 @@ Kostenlos, ohne Konto, ohne Installation.
 
 ---
 
-Sie haben eine STL-Datei und wollen sie ansehen, jemandem zeigen oder etwas dazu
-anmerken. Bisher hieß das: CAD-Software installieren, oder die Datei irgendwo hochladen,
-oder Screenshots hin- und herschicken.
+## Warum es das gibt
 
-Dieses Werkzeug macht daraus einen Schritt: Datei ins Fenster ziehen. Fertig.
+Wir konstruieren für unsere Kunden regelmäßig 3D-Modelle und parametrische
+CAD-Modelle. Wenn der Entwurf dann zur Abstimmung geht, steht der Kunde häufig vor
+demselben Problem: Auf dem Firmenrechner ist keine CAD-Software installiert, und es wird
+auch keine installiert werden. Das Modell, über das gesprochen werden soll, kann er
+nicht ansehen.
 
----
+Bisher hieß die Lösung: Screenshots aus verschiedenen Winkeln, per E-Mail hin und her,
+und Änderungswünsche in Worten — „das Loch oben links, nein, das andere". Das kostet
+Runden, und Missverständnisse fallen erst im Druck auf.
 
-## Für wen
+Mit diesem Werkzeug öffnet der Kunde die Datei einfach im Browser. Er dreht das Modell,
+markiert die Stellen, um die es geht, schreibt seine Änderungswünsche daneben — und
+erzeugt daraus eine Dokumentation: das Modell aus allen Richtungen, dazu jede Markierung
+als eigenes Bild mit dem zugehörigen Text. Dieses PDF geht zurück in die Konstruktion,
+und dort ist ohne Rückfrage klar, welche Stelle gemeint war.
 
-**Für Kunden**, die ein Modell prüfen wollen, bevor sie es in Auftrag geben — ohne
-Software zu installieren und ohne Konstruktionsdaten aus der Hand zu geben.
+Nebenbei löst es das zweite Problem, das bei Konstruktionsdaten immer mitkommt: Die
+Datei wird nirgendwohin hochgeladen. Sie bleibt auf dem Rechner des Kunden.
 
-**Für Maker**, die schnell wissen wollen, wie groß ein Teil wirklich ist, was es wiegen
+**Für wen es außerdem taugt:** Maker und alle, die eine STL aus einer fremden Quelle
+haben und vor dem Druck wissen wollen, wie groß das Teil wirklich ist, was es wiegen
 wird und ob das Netz überhaupt sauber geschlossen ist.
-
-**Für die Abstimmung zwischen beiden.** Statt „das Loch oben links, nein, das andere"
-setzen Sie eine nummerierte Bemerkung ans Modell und schicken ein PDF, in dem jede
-Bemerkung mit dem passenden Bild steht.
 
 ## Was Sie damit machen
 
@@ -51,22 +56,25 @@ Maschine — auch wenn es dafür gedreht werden muss?
 
 Messen können Sie auch: zwei Punkte anklicken, Abstand ablesen.
 
-### Bemerkungen setzen
+### Änderungen markieren
 
-Auf die Stelle klicken, über die Sie sprechen wollen. Es entsteht eine nummerierte Marke
-mit Überschrift, Beschreibung und Art — Hinweis, Änderung, Frage oder Freigabe. Der
-Blickwinkel wird mitgespeichert: Wer die Bemerkung später anklickt, sieht das Modell
-wieder genau so, wie Sie es gesehen haben.
+Auf die Stelle klicken, um die es geht. Dort entsteht ein nummerierter Markierungspin mit
+Überschrift, Beschreibung und Art — **Hinweis**, **Änderung**, **Frage** oder
+**Freigabe**. Der Blickwinkel wird mitgespeichert: Wer die Anmerkung später anklickt,
+sieht das Modell wieder genau so, wie Sie es gesehen haben. Und im PDF steht zu jedem Pin
+das Bild aus genau diesem Winkel.
 
-Die Bemerkungen lassen sich als kleine Datei sichern und beim nächsten Mal wieder laden.
+Damit wird aus „das Loch oben links, nein, das andere" eine Nummer, ein Bild und ein Satz.
+
+Die Anmerkungen lassen sich als kleine Datei sichern und beim nächsten Mal wieder laden.
 **Ohne das Modell** — Sie können sie also weitergeben, ohne Ihr Bauteil mitzugeben.
 
 ### Fotos und PDF erzeugen
 
 **Ein Foto** der aktuellen Ansicht, jederzeit.
 
-**Eine vollständige PDF-Dokumentation**, die Sie einer Anfrage beilegen oder in die Akte
-legen können:
+**Eine vollständige Dokumentation als PDF** — das Blatt, das zurück in die Konstruktion
+geht oder in die Projektakte:
 
 - Deckblatt mit Aufmacherbild und den wichtigsten Zahlen
 - Kennwerte und Prüfergebnis
@@ -74,7 +82,8 @@ legen können:
 - **Rundumansichten**: eine volle Umdrehung um jede Achse, die Sie auswählen, in
   gleichmäßigen Schritten. Wie viele Bilder je Achse, entscheiden Sie — voreingestellt
   sind zehn.
-- je Bemerkung eine Seite mit Bild aus dem gespeicherten Blickwinkel und Ihrem Text
+- **je Markierungspin eine Seite** mit dem Bild aus dem gespeicherten Blickwinkel, der
+  Nummer und Ihrem Text
 
 ## Ihre Datei bleibt bei Ihnen
 
@@ -163,7 +172,7 @@ Build-Schritt zur Laufzeit.
 src/
   stl/          Parser und Geometrie — ohne three.js, läuft auch unter Node
   viewer/       three.js-Szene, vollständig gekapselt
-  export/       PDF, Bild, Bemerkungsdatei
+  export/       PDF, Bild, Anmerkungsdatei
   components/   Oberfläche
   config/       Marke, Kontakt, Bauräume, Werkstoffdichten
   i18n/         Deutsch und Englisch
