@@ -44,6 +44,7 @@ const CLICK_TOLERANCE_PX = 5;
 
 export interface ViewerProps {
   model: LoadedModel;
+  compare: LoadedModel | null;
   viewState: ViewState;
   buildVolume: { x: number; y: number; z: number };
   tool: ToolMode;
@@ -64,6 +65,7 @@ export interface ViewerProps {
 export function Viewer(props: ViewerProps) {
   const {
     model,
+    compare,
     viewState,
     buildVolume,
     tool,
@@ -136,6 +138,15 @@ export function Viewer(props: ViewerProps) {
   useEffect(() => {
     sceneRef.current?.applyViewState(viewState, buildVolume);
   }, [viewState, buildVolume]);
+
+  // Haengt an BEIDEN: Wechselt das Hauptmodell, muss die Vergleichsfassung neu
+  // ausgerichtet werden — sie wird um die Mitte des HAUPTMODELLS verschoben.
+  useEffect(() => {
+    const scene = sceneRef.current;
+    if (!scene) return;
+    const c = model.stats.bbox.center;
+    scene.setCompareModel(compare?.positions ?? null, new THREE.Vector3(c.x, c.y, c.z));
+  }, [compare, model]);
 
   /**
    * Neue Marken brauchen ein neues Bild.

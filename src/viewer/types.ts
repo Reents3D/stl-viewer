@@ -72,6 +72,9 @@ export const DEFAULT_VIEW_STATE: ViewState = {
 /** Farbe der Flaechen, die eine Stuetze brauchen. Bewusst ausserhalb der Marke. */
 export const OVERHANG_COLOR = "#E4572E";
 
+/** Farbe der Vergleichsfassung — warm, damit sie sich vom Bauteilgrau abhebt. */
+export const COMPARE_COLOR = "#D89B2A";
+
 /**
  * Modellfarben.
  *

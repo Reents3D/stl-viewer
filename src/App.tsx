@@ -75,6 +75,7 @@ export default function App() {
   const [infill, setInfill] = useState<number>(DEFAULT_INFILL);
 
   const [overhangStats, setOverhangStats] = useState<OverhangResult | null>(null);
+  const [compareModel, setCompareModel] = useState<LoadedModel | null>(null);
 
   const [exportOptions, setExportOptions] = useState<ExportOptions>(DEFAULT_EXPORT_OPTIONS);
   const [exportProgress, setExportProgress] = useState<ExportProgress | null>(null);
@@ -114,6 +115,7 @@ export default function App() {
           setMeasurements([]);
           setThickness([]);
           setThicknessMiss(false);
+          setCompareModel(null);
           setPendingPoint(null);
           setActiveId(null);
           annotationCounter.current = 0;
@@ -152,6 +154,28 @@ export default function App() {
     if (file) openFiles([file]);
   }, [confirmDiscard, openFiles]);
 
+  /**
+   * Zweite Fassung zum Vergleich laden.
+   *
+   * Bewusst OHNE die Einheitenwahl der Startseite: Zwei Fassungen derselben
+   * Konstruktion haben dieselbe Einheit. Waere sie hier frei waehlbar, liesse
+   * sich versehentlich ein Zoll-Modell neben ein Millimeter-Modell legen, und
+   * die Abweichung waere der Faktor 25,4 statt der Aenderung.
+   */
+  const loadCompare = useCallback(async () => {
+    const file = await pickFile(".stl,model/stl,application/sla");
+    if (!file || !model) return;
+    try {
+      const loaded = await loadStl(file, { scale: model.scale }).promise;
+      setCompareModel(loaded);
+    } catch (cause: unknown) {
+      setError({
+        code: cause instanceof StlLoadError ? cause.code : "not-stl",
+        message: cause instanceof Error ? cause.message : String(cause),
+      });
+    }
+  }, [model]);
+
   /** Zurueck zur Startseite — bereit fuer die naechste Datei. */
   const goHome = useCallback(() => {
     if (!confirmDiscard()) return;
@@ -162,6 +186,7 @@ export default function App() {
     setMeasurements([]);
     setThickness([]);
     setThicknessMiss(false);
+    setCompareModel(null);
     setPendingPoint(null);
     setActiveId(null);
     annotationCounter.current = 0;
@@ -432,6 +457,7 @@ export default function App() {
         <div className="flex-1 min-h-0 flex flex-col lg:flex-row">
           <Viewer
             model={model}
+            compare={compareModel}
             viewState={view}
             buildVolume={buildVolume}
             tool={tool}
@@ -476,6 +502,10 @@ export default function App() {
                 onChange={setView}
                 canShowEdges={sceneRef.current?.canShowEdges() ?? false}
                 overhang={overhangStats}
+                model={model}
+                compare={compareModel}
+                onCompareLoad={loadCompare}
+                onCompareRemove={() => setCompareModel(null)}
               />
             )}
             {tab === "annotate" && (

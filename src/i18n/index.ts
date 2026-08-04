@@ -234,6 +234,28 @@ const S = {
   "bg.dunkel": { de: "Dunkel", en: "Dark" },
   "bg.verlauf": { de: "Verlauf", en: "Gradient" },
 
+  /* -------------------------------------------------------- Versionsvergleich */
+  "compare.title": { de: "Versionsvergleich", en: "Version comparison" },
+  "compare.load": { de: "Zweite Fassung laden", en: "Load second version" },
+  "compare.hint": {
+    de: "Legt eine zweite STL durchscheinend über das Modell — für die Runde nach der Änderung.",
+    en: "Overlays a second STL on the model, semi-transparent — for the round after the change.",
+  },
+  "compare.aligned": {
+    de: "Ausgerichtet über den gemeinsamen CAD-Nullpunkt, nicht über die Mitte. Stammen beide Dateien aus derselben Konstruktion, liegen sie damit richtig übereinander.",
+    en: "Aligned by the shared CAD origin, not by the centre. If both files come from the same design, they line up correctly.",
+  },
+  "compare.show": { de: "Einblenden", en: "Show" },
+  "compare.remove": { de: "Entfernen", en: "Remove" },
+  "compare.loaded": { de: "Geladen", en: "Loaded" },
+  "compare.deltaVolume": { de: "Volumen", en: "Volume" },
+  "compare.deltaSize": { de: "Abmessungen", en: "Dimensions" },
+  "compare.unchanged": { de: "unverändert", en: "unchanged" },
+  "compare.originWarning": {
+    de: "Die beiden Nullpunkte liegen weit auseinander. Vermutlich wurde eine der Dateien im CAD verschoben exportiert — dann ist der Vergleich nicht aussagekräftig.",
+    en: "The two origins are far apart. One of the files was probably exported from a moved position — the comparison is then not meaningful.",
+  },
+
   /* --------------------------------------------------------- Groessenvergleich */
   "scale.title": { de: "Größenvergleich", en: "Size reference" },
   "scale.label": { de: "Referenzobjekt", en: "Reference object" },

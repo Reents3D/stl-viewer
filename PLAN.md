@@ -1,6 +1,6 @@
 # Stand und nächste Schritte
 
-Stand: **2026-08-03**. Das Werkzeug ist veröffentlicht, vollständig benutzbar und
+Stand: **2026-08-04**. Das Werkzeug ist veröffentlicht, vollständig benutzbar und
 läuft unter <https://reents3d.github.io/stl-viewer/>.
 
 Diese Datei ist der Arbeitsstand, nicht die Doku — was das Werkzeug kann, steht im
@@ -17,62 +17,21 @@ Diese Datei ist der Arbeitsstand, nicht die Doku — was das Werkzeug kann, steh
 - PDF-Dokumentation mit Übersicht, Normalansichten, Rundumansichten je Achse und
   einer Seite je Anmerkung
 - Kein Upload, per `connect-src 'none'` erzwungen; CI prüft das am Artefakt
-- 67 Tests, CI und Pages-Auslieferung grün
+- **Überhang-Ansicht** mit einstellbarer Schwelle und Stützflächenanteil. Die
+  Standfläche zählt nicht mit. Am Prüfkörper nachgerechnet: Tisch aus
+  20×20×40-Bein und 60×60×10-Platte → 3.600 von 13.600 mm² = 26,5 %.
+- **Größenvergleich**: Person 1,75 m, Europalette (EN 13698-1), DIN A4 (ISO 216),
+  Kaffeetasse. Die Kamera passt auf Modell **und** Referenz ein; im PDF erscheint
+  sie nur auf dem Deckblatt, nicht in den technischen Ansichten.
+- **Wandstärke per Klick** — Strahl senkrecht durch die Wand, Wert am Modell und
+  in der Liste, unter 1,5 mm rot. Sieben Tests in `tests/lib/thickness.test.ts`.
+- **Versionsvergleich**: zweite STL durchscheinend darüber, Volumen- und
+  Maßdifferenz mit Vorzeichen. Ausrichtung über den gemeinsamen CAD-Nullpunkt.
+- 74 Tests, CI und Pages-Auslieferung grün
 
-## In Arbeit
+## Offen
 
-**Überhang-Ansicht** — die Rechnung liegt fertig und geprüft in
-[`src/lib/overhang.ts`](src/lib/overhang.ts) (11 Tests), ist aber **noch nicht
-verdrahtet**. Es fehlt:
-
-1. Darstellungsmodus `overhang` in `RenderMode` (src/viewer/types.ts)
-2. In `ModelScene`: Farbattribut aus `computeOverhang` an die Geometrie hängen,
-   `material.vertexColors = true`, `material.color` auf Weiß. Grund- und Warnfarbe
-   müssen vorher mit `THREE.Color` in den linearen Arbeitsfarbraum umgerechnet
-   werden — die Funktion erwartet lineares RGB, kein Bildschirm-Hex.
-3. Schwellwinkel als Regler in `DisplayPanel` (Voreinstellung 45°)
-4. Stützflächenanteil als Kennzahl in `InspectPanel` und im PDF
-5. Beim Wechsel zurück: `vertexColors` wieder aus, sonst bleibt das Modell bunt
-
-Achtung bei großen Modellen: Jede Änderung des Schwellwinkels rechnet einmal über
-alle Dreiecke. Bei zwei Millionen sind das spürbare Millisekunden — der Regler
-sollte erst beim Loslassen rechnen, nicht bei jedem Schritt.
-
-## Beschlossen, noch nicht gebaut
-
-Reihenfolge nach Nutzen im Ablauf „konstruieren → Kunde sieht zu → markiert →
-PDF zurück in die Konstruktion".
-
-### 1. Größenvergleich
-
-Referenzobjekte neben dem Modell: Person 1.750 mm, Europalette 1.200 × 800 × 144,
-DIN A4, Kaffeetasse. **Der wichtigste der fünf Punkte:** Am Bildschirm sieht ein
-60-mm-Würfel genauso groß aus wie ein 2,4-m-Exponat. Bei einem Dienstleister,
-dessen Alleinstellung Großformat ist, ist das die teuerste Fehlvorstellung im
-ganzen Ablauf — sie fällt erst auf, wenn das Teil in der Halle steht.
-
-Zu beachten: Die Kameraeinpassung muss die Referenz einschließen, sonst steht die
-Person außerhalb des Bildes. Und das Deckblatt des PDF sollte sie mitnehmen.
-
-### 2. Wandstärke per Klick
-
-Punkt anklicken, Strahl entlang der Flächennormalen nach innen, Abstand bis zur
-Rückwand. Beantwortet die häufigste Rückfrage vor dem Druck an genau der Stelle,
-auf die der Kunde ohnehin zeigt.
-
-Zwei Fallen: Der Raycaster überspringt Rückseiten, solange das Material auf
-`FrontSide` steht — für die Messung vorübergehend auf `DoubleSide` schalten. Und
-die Methode misst entlang der Normalen; bei keilförmigen Wänden ist das nicht die
-kleinste Dicke. Das gehört in die Oberfläche, nicht nur in den Quelltext.
-
-### 3. Versionsvergleich zweier STL
-
-Zweite Datei laden, alte Fassung durchscheinend darüber, Kennwertdifferenz
-ausweisen. Für die Runde **nach** der Änderung. Ausrichtung über den gemeinsamen
-CAD-Ursprung, nicht über die Hüllkörpermitte — bei Revisionen derselben
-Konstruktion ist der Ursprung gleich, die Hüllkörpermitte nicht.
-
-### 4. STEP-Import
+### STEP-Import
 
 Siehe [ADR-013](DECISIONS.md). Beschlossen einschließlich der Lockerung der
 Richtlinie auf `connect-src 'self'` und `'wasm-unsafe-eval'`. Umfang:

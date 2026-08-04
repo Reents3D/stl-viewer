@@ -24,7 +24,15 @@ import {
 import { computeOverhang, type OverhangResult } from "../lib/overhang";
 import { probeThickness } from "../lib/thickness";
 import { buildReference, referenceInfo, type ScaleReferenceId } from "./reference";
-import { OVERHANG_COLOR, type Axis, type CameraState, type ClipState, type StandardView, type ViewState } from "./types";
+import {
+  COMPARE_COLOR,
+  OVERHANG_COLOR,
+  type Axis,
+  type CameraState,
+  type ClipState,
+  type StandardView,
+  type ViewState,
+} from "./types";
 
 export interface HitResult {
   /** Auftreffpunkt in MODELLKOORDINATEN (unabhaengig von Drehung und Lage). */
@@ -79,6 +87,8 @@ export class ModelScene {
 
   private readonly modelRoot = new THREE.Group();
   private mesh: THREE.Mesh | null = null;
+  /** Zweite Fassung zum Vergleich — durchscheinend, nie Ziel eines Klicks. */
+  private compareMesh: THREE.Mesh | null = null;
   private edgeLines: THREE.LineSegments | null = null;
   private wireMesh: THREE.Mesh | null = null;
   private materials: ModelMaterials | null = null;
@@ -305,6 +315,15 @@ export class ModelScene {
       this.referenceRoot.updateMatrixWorld(true);
       box.union(new THREE.Box3().setFromObject(this.referenceRoot));
     }
+    if (this.compareMesh?.geometry.boundingBox) {
+      // Die alte Fassung kann groesser sein als die neue — dann muss die Kamera
+      // auf SIE einpassen, sonst steht die Aenderung ausserhalb des Bildes.
+      box.union(
+        this.compareMesh.geometry.boundingBox
+          .clone()
+          .translate(new THREE.Vector3(0, 0, this.modelSize.z / 2)),
+      );
+    }
     box.getCenter(this.contentCenter);
     const size = box.getSize(new THREE.Vector3());
     this.contentRadius = Math.max(size.length() / 2, 1e-3);
@@ -331,6 +350,65 @@ export class ModelScene {
 
   hasModel(): boolean {
     return this.mesh !== null;
+  }
+
+  /* ------------------------------------------------------------ Versionsvergleich */
+
+  /**
+   * Zweites Modell durchscheinend darueberlegen.
+   *
+   * AUSGERICHTET WIRD UEBER DEN GEMEINSAMEN URSPRUNG, NICHT UEBER DIE MITTE.
+   * Beide Dateien stammen aus derselben Konstruktion, also aus demselben
+   * CAD-Nullpunkt — genau darin steckt die Aussage des Vergleichs. Wuerde man
+   * die Huellkoerpermitten uebereinanderlegen, verschoebe sich die alte Fassung
+   * um die halbe Aenderung, und jede Abweichung erschiene an zwei Stellen
+   * gleichzeitig: einmal zu viel und einmal zu wenig.
+   *
+   * Deshalb bekommt die Vergleichsgeometrie DIESELBE Verschiebung wie das
+   * Hauptmodell — die Mitte des Hauptmodells, nicht ihre eigene.
+   */
+  setCompareModel(positions: Float32Array | null, mainCenter: THREE.Vector3): void {
+    if (this.compareMesh) {
+      this.modelRoot.remove(this.compareMesh);
+      this.compareMesh.geometry.dispose();
+      (this.compareMesh.material as THREE.Material).dispose();
+      this.compareMesh = null;
+    }
+
+    if (positions) {
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+      geometry.translate(-mainCenter.x, -mainCenter.y, -mainCenter.z);
+      geometry.computeVertexNormals();
+      geometry.computeBoundingBox();
+
+      this.compareMesh = new THREE.Mesh(
+        geometry,
+        new THREE.MeshStandardMaterial({
+          color: new THREE.Color(COMPARE_COLOR),
+          roughness: 0.85,
+          metalness: 0,
+          transparent: true,
+          opacity: 0.34,
+          // Ohne depthWrite=false verdeckt die durchscheinende Huelle das
+          // Bauteil dahinter — man saehe die alte Fassung, aber nicht mehr die
+          // neue, und der Vergleich waere verkehrt herum.
+          depthWrite: false,
+          side: THREE.DoubleSide,
+        }),
+      );
+      this.compareMesh.renderOrder = 2;
+      this.modelRoot.add(this.compareMesh);
+    }
+
+    this.updateContentBounds();
+    this.invalidate();
+  }
+
+  setCompareVisible(visible: boolean): void {
+    if (!this.compareMesh) return;
+    this.compareMesh.visible = visible;
+    this.invalidate();
   }
 
   /** Zahl der Dreiecke — entscheidet, ob die Kantenanzeige angeboten wird. */
