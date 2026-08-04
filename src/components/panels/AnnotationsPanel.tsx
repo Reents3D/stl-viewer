@@ -9,7 +9,12 @@
 
 import type { Lang, T } from "../../i18n";
 import * as fmt from "../../lib/format";
-import { ANNOTATION_CATEGORIES, type Annotation, type Measurement } from "../../viewer/types";
+import {
+  ANNOTATION_CATEGORIES,
+  type Annotation,
+  type Measurement,
+  type ThicknessProbe,
+} from "../../viewer/types";
 import { Button, cx, Icon, ICONS, Section } from "../ui";
 
 export function AnnotationsPanel({
@@ -26,6 +31,9 @@ export function AnnotationsPanel({
   measurements,
   onDeleteMeasurement,
   onClearMeasurements,
+  thickness,
+  thicknessMiss,
+  onClearThickness,
 }: {
   t: T;
   lang: Lang;
@@ -40,6 +48,9 @@ export function AnnotationsPanel({
   measurements: readonly Measurement[];
   onDeleteMeasurement: (id: string) => void;
   onClearMeasurements: () => void;
+  thickness: readonly ThicknessProbe[];
+  thicknessMiss: boolean;
+  onClearThickness: () => void;
 }) {
   return (
     <>
@@ -130,6 +141,54 @@ export function AnnotationsPanel({
           </div>
         )}
         <p className="text-[11px] muted mt-2 leading-snug">{t("measure.note")}</p>
+      </Section>
+
+      <Section
+        title={t("thickness.title")}
+        right={
+          thickness.length > 0 ? (
+            <button
+              type="button"
+              onClick={onClearThickness}
+              className="text-xs muted hover:text-bad transition-colors"
+            >
+              {t("thickness.clear")}
+            </button>
+          ) : undefined
+        }
+      >
+        {thickness.length === 0 ? (
+          <p className="text-sm muted leading-snug surface p-3">{t("thickness.empty")}</p>
+        ) : (
+          <div className="surface px-3 py-1">
+            {thickness.map((probe, index) => (
+              <div
+                key={probe.id}
+                className="flex items-baseline justify-between gap-2 py-1.5 border-b border-hairline dark:border-[#1E2B3D] last:border-0"
+              >
+                <span className="text-xs muted shrink-0">{t("thickness.at", { n: index + 1 })}</span>
+                <span
+                  className={cx(
+                    "text-sm font-medium num",
+                    // 1,5 mm ist die Grenze, unterhalb der eine 0,8-mm-Duese
+                    // keine zwei Bahnen mehr nebeneinander legt.
+                    probe.thickness < 1.5 && "text-bad",
+                  )}
+                >
+                  {fmt.num(probe.thickness, lang, 2)} mm
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {thicknessMiss && (
+          <p className="text-[11px] text-ok mt-2 leading-snug">{t("thickness.miss")}</p>
+        )}
+        {thickness.some((p) => p.thickness < 1.5) && (
+          <p className="text-[11px] text-bad mt-2 leading-snug">{t("thickness.thin")}</p>
+        )}
+        <p className="text-[11px] muted mt-2 leading-snug">{t("thickness.note")}</p>
       </Section>
     </>
   );

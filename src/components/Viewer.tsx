@@ -23,6 +23,7 @@ import {
   type Annotation,
   type Measurement,
   type StandardView,
+  type ThicknessProbe,
   type ToolMode,
   type ViewState,
 } from "../viewer/types";
@@ -48,6 +49,7 @@ export interface ViewerProps {
   tool: ToolMode;
   annotations: readonly Annotation[];
   measurements: readonly Measurement[];
+  thickness: readonly ThicknessProbe[];
   pendingPoint: { x: number; y: number; z: number } | null;
   activeId: string | null;
   onSceneReady: (scene: ModelScene | null) => void;
@@ -67,6 +69,7 @@ export function Viewer(props: ViewerProps) {
     tool,
     annotations,
     measurements,
+    thickness,
     pendingPoint,
     activeId,
     onSceneReady,
@@ -86,8 +89,8 @@ export function Viewer(props: ViewerProps) {
   // Der Rueckruf nach jedem Bild sieht immer den AKTUELLEN Stand — ueber Refs,
   // nicht ueber die Abhaengigkeiten eines Effekts. Sonst zeigte er nach dem
   // Loeschen einer Anmerkung noch auf die alte Liste.
-  const latest = useRef({ annotations, measurements, pendingPoint, activeId });
-  latest.current = { annotations, measurements, pendingPoint, activeId };
+  const latest = useRef({ annotations, measurements, thickness, pendingPoint, activeId });
+  latest.current = { annotations, measurements, thickness, pendingPoint, activeId };
 
   /* ------------------------------------------------------------- Szene anlegen */
 
@@ -146,23 +149,25 @@ export function Viewer(props: ViewerProps) {
    */
   useEffect(() => {
     sceneRef.current?.invalidate();
-  }, [annotations, measurements, pendingPoint, activeId]);
+  }, [annotations, measurements, thickness, pendingPoint, activeId]);
 
   /* ----------------------------------------------------------------- Messlinien */
 
   useEffect(() => {
     const scene = sceneRef.current;
     if (!scene) return;
-    scene.setMeasureLines(
-      measurements.map(
-        (m) =>
-          [new THREE.Vector3(m.a.x, m.a.y, m.a.z), new THREE.Vector3(m.b.x, m.b.y, m.b.z)] as [
-            THREE.Vector3,
-            THREE.Vector3,
-          ],
-      ),
+    const paar = (
+      a: { x: number; y: number; z: number },
+      b: { x: number; y: number; z: number },
+    ): [THREE.Vector3, THREE.Vector3] => [
+      new THREE.Vector3(a.x, a.y, a.z),
+      new THREE.Vector3(b.x, b.y, b.z),
+    ];
+    scene.setOverlayLines(
+      measurements.map((m) => paar(m.a, m.b)),
+      thickness.map((p) => paar(p.point, p.exit)),
     );
-  }, [measurements]);
+  }, [measurements, thickness]);
 
   /* --------------------------------------------------------------------- Klick */
 
@@ -237,11 +242,13 @@ export function Viewer(props: ViewerProps) {
   const hint =
     tool === "annotate"
       ? t("tool.annotateHint")
-      : tool === "measure"
-        ? latest.current.pendingPoint
-          ? t("measure.pending")
-          : t("tool.measureHint")
-        : t("tool.orbitHint");
+      : tool === "thickness"
+        ? t("tool.thicknessHint")
+        : tool === "measure"
+          ? latest.current.pendingPoint
+            ? t("measure.pending")
+            : t("tool.measureHint")
+          : t("tool.orbitHint");
 
   return (
     <div className="relative flex-1 min-w-0 min-h-0 bg-canvas dark:bg-[#070E18]">
@@ -286,6 +293,20 @@ export function Viewer(props: ViewerProps) {
           </span>
         ))}
 
+        {thickness.map((probe) => (
+          <span
+            key={probe.id}
+            ref={(element) => {
+              if (element) labelRefs.current.set(probe.id, element);
+              else labelRefs.current.delete(probe.id);
+            }}
+            className="measure-label"
+            style={{ left: 0, top: 0, background: "#0C4251" }}
+          >
+            {fmt.num(probe.thickness, lang, 2)} mm
+          </span>
+        ))}
+
         {pendingPoint && (
           <span
             ref={(element) => {
@@ -317,6 +338,7 @@ export function Viewer(props: ViewerProps) {
               ["orbit", ICONS.orbit, t("tool.orbit")],
               ["annotate", ICONS.pin, t("tool.annotate")],
               ["measure", ICONS.ruler, t("tool.measure")],
+              ["thickness", ICONS.wall, t("tool.thickness")],
             ] as const
           ).map(([mode, icon, label]) => (
             <button
@@ -369,6 +391,7 @@ export function Viewer(props: ViewerProps) {
 interface OverlayState {
   annotations: readonly Annotation[];
   measurements: readonly Measurement[];
+  thickness: readonly ThicknessProbe[];
   pendingPoint: { x: number; y: number; z: number } | null;
   activeId: string | null;
 }
@@ -415,6 +438,26 @@ function syncOverlays(
       (measurement.a.x + measurement.b.x) / 2,
       (measurement.a.y + measurement.b.y) / 2,
       (measurement.a.z + measurement.b.z) / 2,
+    );
+    const screen = scene.project(vector);
+    if (!screen || !screen.visible) {
+      element.style.display = "none";
+      continue;
+    }
+    element.style.display = "";
+    element.style.left = `${screen.x}px`;
+    element.style.top = `${screen.y}px`;
+  }
+
+  for (const probe of state.thickness) {
+    const element = labels.get(probe.id);
+    if (!element) continue;
+    // Auf halber Strecke DURCH das Bauteil: Dort steht die Beschriftung mittig
+    // ueber der gemessenen Wand, nicht am Rand.
+    vector.set(
+      (probe.point.x + probe.exit.x) / 2,
+      (probe.point.y + probe.exit.y) / 2,
+      (probe.point.z + probe.exit.z) / 2,
     );
     const screen = scene.project(vector);
     if (!screen || !screen.visible) {

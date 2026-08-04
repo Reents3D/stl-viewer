@@ -15,7 +15,7 @@ export type StandardView = "iso" | "front" | "back" | "left" | "right" | "top" |
  * eine Anmerkung setzen und einen Messpunkt legen. Wer beides angeboten bekommt,
  * bekommt beim ersten Fehlklick eine Anmerkung, die er nicht wollte.
  */
-export type ToolMode = "orbit" | "annotate" | "measure";
+export type ToolMode = "orbit" | "annotate" | "measure" | "thickness";
 
 export type Axis = "x" | "y" | "z";
 
@@ -136,4 +136,21 @@ export interface Measurement {
   a: { x: number; y: number; z: number };
   b: { x: number; y: number; z: number };
   distance: number;
+}
+
+/**
+ * Eine Wandstaerkenmessung.
+ *
+ * Gemessen wird ENTLANG DER FLAECHENNORMALEN vom angeklickten Punkt nach innen
+ * bis zur naechsten Rueckwand. Bei parallelen Waenden ist das die Wandstaerke.
+ * Bei keilfoermigen Waenden ist es der Abstand in dieser Richtung — nicht die
+ * kleinste Dicke. Genau das steht auch in der Oberflaeche.
+ */
+export interface ThicknessProbe {
+  id: string;
+  /** Eintrittspunkt in Modellkoordinaten — dort wurde geklickt. */
+  point: { x: number; y: number; z: number };
+  /** Austrittspunkt an der Rueckwand. */
+  exit: { x: number; y: number; z: number };
+  thickness: number;
 }

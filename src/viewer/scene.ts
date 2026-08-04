@@ -22,6 +22,7 @@ import {
   type ModelMaterials,
 } from "./materials";
 import { computeOverhang, type OverhangResult } from "../lib/overhang";
+import { probeThickness } from "../lib/thickness";
 import { buildReference, referenceInfo, type ScaleReferenceId } from "./reference";
 import { OVERHANG_COLOR, type Axis, type CameraState, type ClipState, type StandardView, type ViewState } from "./types";
 
@@ -691,6 +692,18 @@ export class ModelScene {
     return null;
   }
 
+  /** Wandstaerke am angeklickten Punkt — Rechnung siehe lib/thickness.ts. */
+  probeThickness(hit: HitResult): { thickness: number; exitLocal: THREE.Vector3 } | null {
+    if (!this.mesh) return null;
+    // Der Versatz haengt an der Bauteilgroesse: 1e-4 mm ist bei einem
+    // 2,4-m-Exponat unter der Aufloesung einfacher Genauigkeit und wuerde den
+    // Selbsttreffer nicht mehr verhindern.
+    const epsilon = Math.max(this.contentRadius * 1e-5, 1e-4);
+    const result = probeThickness(this.mesh, this.raycaster, hit.world, hit.normal, epsilon);
+    if (!result) return null;
+    return { thickness: result.thickness, exitLocal: this.mesh.worldToLocal(result.exit) };
+  }
+
   /** Modellkoordinate auf Bildschirmkoordinate abbilden (fuer Marken und Masse). */
   project(local: THREE.Vector3): { x: number; y: number; visible: boolean } | null {
     if (!this.mesh) return null;
@@ -722,28 +735,53 @@ export class ModelScene {
 
   /* ------------------------------------------------------------------- Overlay */
 
-  /** Messstrecken als Liniengeometrie in der Szene (nicht als HTML). */
-  setMeasureLines(segments: ReadonlyArray<[THREE.Vector3, THREE.Vector3]>): void {
-    this.overlay.clear();
-    if (!this.mesh || segments.length === 0) {
+  /**
+   * Mess- und Wandstaerkenstrecken als Liniengeometrie in der Szene.
+   *
+   * Zwei Farben, ein Aufbau: Messstrecken liegen auf der Oberflaeche, die
+   * Wandstaerke fuehrt durch das Bauteil hindurch. Wer beides gleich faerbte,
+   * koennte im Bild nicht unterscheiden, was gemessen wurde.
+   */
+  setOverlayLines(
+    measures: ReadonlyArray<[THREE.Vector3, THREE.Vector3]>,
+    probes: ReadonlyArray<[THREE.Vector3, THREE.Vector3]> = [],
+  ): void {
+    for (const child of [...this.overlay.children]) {
+      this.overlay.remove(child);
+      if (child instanceof THREE.LineSegments) {
+        child.geometry.dispose();
+        (child.material as THREE.Material).dispose();
+      }
+    }
+    if (!this.mesh) {
       this.invalidate();
       return;
     }
-    const points: number[] = [];
-    for (const [a, b] of segments) {
-      const wa = this.mesh.localToWorld(a.clone());
-      const wb = this.mesh.localToWorld(b.clone());
-      points.push(wa.x, wa.y, wa.z, wb.x, wb.y, wb.z);
-    }
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute("position", new THREE.Float32BufferAttribute(points, 3));
-    const material = new THREE.LineBasicMaterial({ color: 0x0b1220 });
-    const lines = new THREE.LineSegments(geometry, material);
-    // Ueber allem zeichnen: Ein Massband, das im Bauteil verschwindet, misst
-    // zwar richtig, ist aber nicht ablesbar.
-    lines.renderOrder = 999;
-    material.depthTest = false;
-    this.overlay.add(lines);
+
+    const build = (
+      segments: ReadonlyArray<[THREE.Vector3, THREE.Vector3]>,
+      color: number,
+    ): void => {
+      if (segments.length === 0) return;
+      const points: number[] = [];
+      for (const [a, b] of segments) {
+        const wa = this.mesh!.localToWorld(a.clone());
+        const wb = this.mesh!.localToWorld(b.clone());
+        points.push(wa.x, wa.y, wa.z, wb.x, wb.y, wb.z);
+      }
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute("position", new THREE.Float32BufferAttribute(points, 3));
+      // Ueber allem zeichnen: Ein Massband, das im Bauteil verschwindet, misst
+      // zwar richtig, ist aber nicht ablesbar. Bei der Wandstaerke gilt das
+      // doppelt — sie verlaeuft ihrer Natur nach INNERHALB des Koerpers.
+      const material = new THREE.LineBasicMaterial({ color, depthTest: false });
+      const lines = new THREE.LineSegments(geometry, material);
+      lines.renderOrder = 999;
+      this.overlay.add(lines);
+    };
+
+    build(measures, 0x0b1220);
+    build(probes, 0x0c4251);
     this.invalidate();
   }
 

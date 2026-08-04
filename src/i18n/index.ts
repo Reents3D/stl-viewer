@@ -172,7 +172,33 @@ const S = {
   "tool.orbit": { de: "Drehen", en: "Orbit" },
   "tool.annotate": { de: "Anmerkung setzen", en: "Add annotation" },
   "tool.measure": { de: "Messen", en: "Measure" },
+  "tool.thickness": { de: "Wandstärke", en: "Wall thickness" },
   "tool.orbitHint": { de: "Ziehen dreht, Rad zoomt, rechte Taste verschiebt", en: "Drag to orbit, wheel to zoom, right button to pan" },
+  "tool.thicknessHint": {
+    de: "Auf eine Fläche klicken — gemessen wird senkrecht hindurch bis zur Rückwand",
+    en: "Click a face — measured straight through to the opposite wall",
+  },
+
+  /* -------------------------------------------------------------- Wandstaerke */
+  "thickness.title": { de: "Wandstärken", en: "Wall thickness" },
+  "thickness.empty": {
+    de: "Auf eine Fläche des Modells klicken. Der Betrachter misst senkrecht durch die Wand bis zur Rückseite.",
+    en: "Click a face of the model. The viewer measures straight through the wall to the far side.",
+  },
+  "thickness.at": { de: "Stelle {n}", en: "Spot {n}" },
+  "thickness.clear": { de: "Alle löschen", en: "Clear all" },
+  "thickness.note": {
+    de: "Gemessen wird senkrecht zur angeklickten Fläche. Bei parallelen Wänden ist das die Wandstärke; bei keilförmigen Wänden ist es der Abstand in dieser Richtung, nicht die kleinste Dicke.",
+    en: "Measured perpendicular to the clicked face. With parallel walls that is the wall thickness; with tapered walls it is the distance in that direction, not the smallest thickness.",
+  },
+  "thickness.miss": {
+    de: "Kein Gegenstück gefunden — an dieser Stelle geht der Strahl aus dem Bauteil heraus, ohne wieder auf eine Fläche zu treffen. Das passiert an offenen Kanten und bei nach innen gedrehten Netzen.",
+    en: "No opposite face found — at this spot the ray leaves the part without hitting another face. This happens at open edges and with inverted meshes.",
+  },
+  "thickness.thin": {
+    de: "Unter 1,5 mm wird es im FDM-Druck heikel: Das ist weniger als zwei Wandbahnen einer 0,8-mm-Düse.",
+    en: "Below 1.5 mm FDM printing gets tricky: that is less than two perimeters of a 0.8 mm nozzle.",
+  },
   "tool.annotateHint": { de: "Auf das Modell klicken, um eine Anmerkung zu setzen", en: "Click the model to place an annotation" },
   "tool.measureHint": { de: "Zwei Punkte auf dem Modell anklicken", en: "Click two points on the model" },
 

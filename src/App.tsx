@@ -43,6 +43,7 @@ import {
   DEFAULT_VIEW_STATE,
   type Annotation,
   type Measurement,
+  type ThicknessProbe,
   type ToolMode,
   type ViewState,
 } from "./viewer/types";
@@ -66,6 +67,8 @@ export default function App() {
   const [annotations, setAnnotations] = useState<Annotation[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [measurements, setMeasurements] = useState<Measurement[]>([]);
+  const [thickness, setThickness] = useState<ThicknessProbe[]>([]);
+  const [thicknessMiss, setThicknessMiss] = useState(false);
   const [pendingPoint, setPendingPoint] = useState<{ x: number; y: number; z: number } | null>(null);
 
   const [materialId, setMaterialId] = useState<string>(DEFAULT_MATERIAL_ID);
@@ -109,6 +112,8 @@ export default function App() {
           setModel(loaded);
           setAnnotations([]);
           setMeasurements([]);
+          setThickness([]);
+          setThicknessMiss(false);
           setPendingPoint(null);
           setActiveId(null);
           annotationCounter.current = 0;
@@ -155,6 +160,8 @@ export default function App() {
     setModel(null);
     setAnnotations([]);
     setMeasurements([]);
+    setThickness([]);
+    setThicknessMiss(false);
     setPendingPoint(null);
     setActiveId(null);
     annotationCounter.current = 0;
@@ -234,6 +241,27 @@ export default function App() {
         };
         setAnnotations((current) => [...current, annotation]);
         setActiveId(annotation.id);
+        setTab("annotate");
+        return;
+      }
+
+      if (tool === "thickness") {
+        const probe = scene.probeThickness(hit);
+        // Kein Treffer heisst nicht "null Millimeter", sondern "hier geht der
+        // Strahl ins Freie". Das ist ein Befund und wird als solcher gemeldet,
+        // statt als Messwert null in der Liste zu landen.
+        setThicknessMiss(probe === null);
+        if (probe) {
+          setThickness((current) => [
+            ...current,
+            {
+              id: `d${current.length + 1}-${Math.round(probe.thickness * 100)}`,
+              point,
+              exit: { x: probe.exitLocal.x, y: probe.exitLocal.y, z: probe.exitLocal.z },
+              thickness: probe.thickness,
+            },
+          ]);
+        }
         setTab("annotate");
         return;
       }
@@ -409,6 +437,7 @@ export default function App() {
             tool={tool}
             annotations={annotations}
             measurements={measurements}
+            thickness={thickness}
             pendingPoint={pendingPoint}
             activeId={activeId}
             onSceneReady={(scene) => {
@@ -468,6 +497,12 @@ export default function App() {
                 onClearMeasurements={() => {
                   setMeasurements([]);
                   setPendingPoint(null);
+                }}
+                thickness={thickness}
+                thicknessMiss={thicknessMiss}
+                onClearThickness={() => {
+                  setThickness([]);
+                  setThicknessMiss(false);
                 }}
               />
             )}
