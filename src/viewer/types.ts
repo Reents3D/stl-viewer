@@ -1,5 +1,9 @@
 /** Zustandstypen des Betrachters. */
 
+import type { ScaleReferenceId } from "./reference";
+
+export type { ScaleReferenceId };
+
 export type RenderMode = "solid" | "edges" | "wireframe" | "xray";
 
 export type StandardView = "iso" | "front" | "back" | "left" | "right" | "top" | "bottom";
@@ -23,6 +27,20 @@ export interface ClipState {
   flip: boolean;
 }
 
+/**
+ * Ueberhang-Ansicht.
+ *
+ * Bewusst KEIN fuenfter Eintrag in der Darstellungsauswahl, sondern ein eigener
+ * Schalter: Es ist eine Auswertung, die sich ueber die gewaehlte Darstellung
+ * legt — wie die Schnittebene. Ausserdem passten fuenf Beschriftungen nicht in
+ * die 22 rem breite Spalte, ohne dass "Drahtgitter" abgeschnitten wird.
+ */
+export interface OverhangState {
+  enabled: boolean;
+  /** Schwelle in Grad gegen die Waagerechte. Flacher heisst: Stuetze noetig. */
+  degrees: number;
+}
+
 export interface ViewState {
   renderMode: RenderMode;
   orthographic: boolean;
@@ -33,6 +51,8 @@ export interface ViewState {
   modelColor: string;
   background: "hell" | "dunkel" | "verlauf";
   clip: ClipState;
+  overhang: OverhangState;
+  scaleReference: ScaleReferenceId;
 }
 
 export const DEFAULT_VIEW_STATE: ViewState = {
@@ -45,7 +65,12 @@ export const DEFAULT_VIEW_STATE: ViewState = {
   modelColor: "#B8C4CC",
   background: "verlauf",
   clip: { enabled: false, axis: "z", position: 0.5, flip: false },
+  overhang: { enabled: false, degrees: 45 },
+  scaleReference: "none",
 };
+
+/** Farbe der Flaechen, die eine Stuetze brauchen. Bewusst ausserhalb der Marke. */
+export const OVERHANG_COLOR = "#E4572E";
 
 /**
  * Modellfarben.

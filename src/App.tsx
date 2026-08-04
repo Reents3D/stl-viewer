@@ -34,6 +34,7 @@ import {
 } from "./export/run-export";
 import { detectLang, makeT, type Lang } from "./i18n";
 import * as fmt from "./lib/format";
+import type { OverhangResult } from "./lib/overhang";
 import { fitsInBuildVolume } from "./stl/geometry";
 import { loadStl, looksLikeStlFile, StlLoadError, type LoadedModel, type LoadProgress } from "./stl/load";
 import type { StlErrorCode } from "./stl/types";
@@ -69,6 +70,8 @@ export default function App() {
 
   const [materialId, setMaterialId] = useState<string>(DEFAULT_MATERIAL_ID);
   const [infill, setInfill] = useState<number>(DEFAULT_INFILL);
+
+  const [overhangStats, setOverhangStats] = useState<OverhangResult | null>(null);
 
   const [exportOptions, setExportOptions] = useState<ExportOptions>(DEFAULT_EXPORT_OPTIONS);
   const [exportProgress, setExportProgress] = useState<ExportProgress | null>(null);
@@ -417,6 +420,7 @@ export default function App() {
               setTab("annotate");
             }}
             onTool={setTool}
+            onOverhang={setOverhangStats}
             t={t}
             lang={lang}
           />
@@ -438,9 +442,11 @@ export default function App() {
             {tab === "display" && (
               <DisplayPanel
                 t={t}
+                lang={lang}
                 view={view}
                 onChange={setView}
                 canShowEdges={sceneRef.current?.canShowEdges() ?? false}
+                overhang={overhangStats}
               />
             )}
             {tab === "annotate" && (

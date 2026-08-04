@@ -21,7 +21,9 @@ import {
   setMaterialColor,
   type ModelMaterials,
 } from "./materials";
-import type { Axis, CameraState, ClipState, StandardView, ViewState } from "./types";
+import { computeOverhang, type OverhangResult } from "../lib/overhang";
+import { buildReference, referenceInfo, type ScaleReferenceId } from "./reference";
+import { OVERHANG_COLOR, type Axis, type CameraState, type ClipState, type StandardView, type ViewState } from "./types";
 
 export interface HitResult {
   /** Auftreffpunkt in MODELLKOORDINATEN (unabhaengig von Drehung und Lage). */
@@ -35,6 +37,14 @@ export interface CaptureOptions {
   height: number;
   /** Gitter, Achsen und Bauraum ausblenden — fuer Dokumentationsbilder. */
   clean?: boolean;
+  /**
+   * Referenzobjekt ausblenden.
+   *
+   * Fuer Rundumansichten und Normalansichten gesetzt: Dort geht es um die Form
+   * des Bauteils, und eine Person, an der das Modell vorbeirotiert, lenkt davon
+   * ab. Auf dem Deckblatt bleibt sie stehen — dort ist die Groesse die Aussage.
+   */
+  hideReference?: boolean;
   transparent?: boolean;
   /**
    * Marken, die IN das Bild gezeichnet werden.
@@ -72,6 +82,15 @@ export class ModelScene {
   private wireMesh: THREE.Mesh | null = null;
   private materials: ModelMaterials | null = null;
 
+  /**
+   * Das Referenzobjekt haengt NICHT unter modelRoot.
+   *
+   * Sonst wuerde es bei der Rundumaufnahme mitgedreht — eine Person, die sich
+   * mit dem Bauteil dreht, ist kein Massstab mehr, sondern ein zweites Bauteil.
+   */
+  private readonly referenceRoot = new THREE.Group();
+  private referenceId: ScaleReferenceId = "none";
+
   private readonly helpers = new THREE.Group();
   private grid: THREE.GridHelper | null = null;
   private axes: THREE.AxesHelper | null = null;
@@ -83,7 +102,33 @@ export class ModelScene {
 
   private readonly raycaster = new THREE.Raycaster();
   private modelSize = new THREE.Vector3(1, 1, 1);
-  private modelRadius = 1;
+  /**
+   * Huelle ueber ALLES, was zur Darstellung gehoert — Modell und Referenzobjekt.
+   *
+   * Die Kamera passt darauf ein, nicht auf das Modell allein. Sonst stuende die
+   * 1,75-m-Person neben einem 60-mm-Teil ausserhalb des Bildes, und der
+   * Groessenvergleich waere genau dann unsichtbar, wenn er am meisten zu sagen
+   * haette.
+   */
+  private contentCenter = new THREE.Vector3(0, 0, 0.5);
+  private contentRadius = 1;
+  private contentSpanXY = 1;
+
+  private localMinZ = 0;
+  /** Schwelle und Grundfarbe, fuer die die zwischengespeicherten Farben gelten. */
+  private overhangKey: string | null = null;
+  /** Letzte Rechnung. Bleibt beim Ausschalten erhalten. */
+  private overhangCache: OverhangResult | null = null;
+  /**
+   * Was zuletzt an die Oberflaeche gemeldet wurde.
+   *
+   * Getrennt vom Zwischenspeicher, weil beides auseinanderlaeuft: Wer die
+   * Ansicht aus- und gleich wieder einschaltet, bekommt keine neue Rechnung
+   * (der Schluessel passt noch), braucht aber trotzdem die Zahl zurueck.
+   */
+  private reportedOverhang: OverhangResult | null = null;
+  /** Meldet neue Ueberhangzahlen an die Oberflaeche. */
+  onOverhangChanged: ((stats: OverhangResult | null) => void) | null = null;
 
   private frame = 0;
   private needsRender = true;
@@ -124,7 +169,7 @@ export class ModelScene {
     this.controls.screenSpacePanning = true;
     this.controls.addEventListener("change", () => this.invalidate());
 
-    this.scene.add(this.modelRoot, this.helpers, this.overlay);
+    this.scene.add(this.modelRoot, this.referenceRoot, this.helpers, this.overlay);
     this.setupLights();
     this.setBackground("verlauf");
 
@@ -199,11 +244,72 @@ export class ModelScene {
     }
 
     this.modelSize = size.clone();
-    this.modelRadius = size.length() / 2;
+    // Die Geometrie wurde in ihren Mittelpunkt verschoben, also liegt die
+    // Unterkante bei -halbe Hoehe. Die Ueberhangpruefung braucht diesen Wert,
+    // um die Standflaeche zu erkennen.
+    this.localMinZ = -size.z / 2;
+    this.overhangKey = null;
+    this.overhangCache = null;
+    this.reportedOverhang = null;
 
+    this.placeReference();
+    this.updateContentBounds();
     this.buildGrid();
     this.setView("iso");
     this.invalidate();
+  }
+
+  /* ------------------------------------------------------------- Groessenvergleich */
+
+  setScaleReference(id: ScaleReferenceId): void {
+    if (this.referenceId === id) return;
+    this.referenceId = id;
+    this.placeReference();
+    this.updateContentBounds();
+    this.buildGrid();
+    // Einpassen, damit die Referenz auch wirklich zu sehen ist. Ohne diesen
+    // Schritt steht bei einem Kleinteil die Person unsichtbar am Bildrand — und
+    // der Kunde haelt den Schalter fuer kaputt.
+    this.frameModel();
+  }
+
+  private placeReference(): void {
+    for (const child of [...this.referenceRoot.children]) {
+      this.referenceRoot.remove(child);
+      child.traverse((object) => {
+        if (object instanceof THREE.Mesh) {
+          object.geometry.dispose();
+          (object.material as THREE.Material).dispose();
+        }
+      });
+    }
+
+    const group = buildReference(this.referenceId);
+    if (!group) return;
+
+    // Rechts neben das Bauteil, auf die Bauplatte. Der Abstand waechst mit dem
+    // Bauteil mit, damit sich beide bei jeder Groesse nicht beruehren.
+    const info = referenceInfo(this.referenceId);
+    const gap = Math.max(80, this.modelSize.x * 0.15);
+    group.position.set(this.modelSize.x / 2 + gap + (info.size?.x ?? 0) / 2, 0, 0);
+    this.referenceRoot.add(group);
+  }
+
+  private updateContentBounds(): void {
+    const box = new THREE.Box3().setFromCenterAndSize(
+      new THREE.Vector3(0, 0, this.modelSize.z / 2),
+      this.modelSize,
+    );
+    if (this.referenceRoot.children.length > 0) {
+      this.referenceRoot.updateMatrixWorld(true);
+      box.union(new THREE.Box3().setFromObject(this.referenceRoot));
+    }
+    box.getCenter(this.contentCenter);
+    const size = box.getSize(new THREE.Vector3());
+    this.contentRadius = Math.max(size.length() / 2, 1e-3);
+    // Fuer das Raster zaehlt nur die Grundflaeche. Die Hoehe einer stehenden
+    // Person wuerde es sonst weit ueber das Noetige hinaus aufblasen.
+    this.contentSpanXY = Math.max(size.x, size.y);
   }
 
   private clearModel(): void {
@@ -239,8 +345,9 @@ export class ModelScene {
     this.axes = null;
     this.buildBox = null;
 
-    // Rasterweite auf eine runde Zahl in der Groessenordnung des Bauteils.
-    const span = Math.max(this.modelSize.x, this.modelSize.y) * 1.8 || 100;
+    // Rasterweite auf eine runde Zahl in der Groessenordnung des Inhalts —
+    // einschliesslich Referenzobjekt, sonst endet die Bauplatte vor der Person.
+    const span = (this.contentSpanXY || Math.max(this.modelSize.x, this.modelSize.y)) * 1.4 || 100;
     const step = niceStep(span / 10);
     const extent = Math.ceil(span / step) * step;
 
@@ -288,6 +395,13 @@ export class ModelScene {
     if (this.edgeLines) this.edgeLines.visible = visibility.edgesVisible && this.canShowEdges();
 
     setMaterialColor(this.materials, state.modelColor);
+    // NACH setMaterialColor: Die Ueberhang-Ansicht ueberschreibt die Farbe
+    // vollstaendig. Umgekehrte Reihenfolge und die Auswertung waere sofort
+    // wieder von der Modellfarbe zugedeckt.
+    if (state.overhang.enabled) this.enableOverhang(state.overhang.degrees, state.modelColor);
+    else this.disableOverhang();
+
+    this.setScaleReference(state.scaleReference);
 
     if (this.grid) this.grid.visible = state.showGrid;
     if (this.axes) this.axes.visible = state.showAxes;
@@ -303,6 +417,70 @@ export class ModelScene {
     this.setClip(state.clip);
     this.setOrthographic(state.orthographic);
     this.invalidate();
+  }
+
+  /* ------------------------------------------------------------- Ueberhang */
+
+  /**
+   * Ueberhangflaechen einfaerben.
+   *
+   * Die Farben haengen an der Geometrie, nicht am Werkstoff — ein Farbattribut
+   * je Eckpunkt. Deshalb wird nur gerechnet, wenn sich Schwelle oder Grundfarbe
+   * geaendert haben: Bei zwei Millionen Dreiecken ist der Durchlauf spuerbar,
+   * und applyViewState laeuft bei JEDER Aenderung an der Darstellung.
+   */
+  private enableOverhang(degrees: number, baseColorHex: string): void {
+    if (!this.mesh || !this.materials) return;
+
+    const key = `${degrees}|${baseColorHex}`;
+    if (this.overhangKey !== key) {
+      // THREE.Color rechnet einen Bildschirmwert in den linearen Arbeitsfarbraum
+      // um. Ohne diesen Schritt saehen die Farben im Bild ausgewaschen aus,
+      // weil das Farbattribut ungefiltert an den Shader geht.
+      const base = new THREE.Color(baseColorHex);
+      const warn = new THREE.Color(OVERHANG_COLOR);
+      const positions = this.mesh.geometry.getAttribute("position").array as Float32Array;
+
+      const result = computeOverhang(positions, {
+        thresholdDegrees: degrees,
+        minZ: this.localMinZ,
+        plateTolerance: Math.max(0.05, this.modelSize.z * 1e-4),
+        baseColor: [base.r, base.g, base.b],
+        warnColor: [warn.r, warn.g, warn.b],
+      });
+
+      this.mesh.geometry.setAttribute("color", new THREE.BufferAttribute(result.colors, 3));
+      this.overhangKey = key;
+      this.overhangCache = result;
+    }
+
+    if (this.reportedOverhang !== this.overhangCache) {
+      this.reportedOverhang = this.overhangCache;
+      this.onOverhangChanged?.(this.overhangCache);
+    }
+
+    const { surface } = this.materials;
+    surface.vertexColors = true;
+    // Weiss als Grundton: Das Farbattribut wird mit der Werkstofffarbe
+    // multipliziert. Bliebe hier die Modellfarbe stehen, kaeme das Warnrot als
+    // schmutziges Braun heraus.
+    surface.color.setRGB(1, 1, 1);
+    surface.emissive.setRGB(0, 0, 0);
+    surface.needsUpdate = true;
+  }
+
+  private disableOverhang(): void {
+    if (!this.materials) return;
+    if (this.materials.surface.vertexColors) {
+      this.materials.surface.vertexColors = false;
+      this.materials.surface.needsUpdate = true;
+    }
+    if (this.reportedOverhang !== null) {
+      this.reportedOverhang = null;
+      this.onOverhangChanged?.(null);
+    }
+    // overhangCache und overhangKey bleiben stehen: Wer die Ansicht nur kurz
+    // ausschaltet, soll beim Einschalten nicht erneut auf die Rechnung warten.
   }
 
   private setBackground(kind: ViewState["background"]): void {
@@ -377,7 +555,7 @@ export class ModelScene {
     // Abstand zum Ziel bestimmt den sichtbaren Ausschnitt — so verhaelt sich das
     // Mausrad in der orthografischen Ansicht wie in der perspektivischen.
     const distance = this.camera.position.distanceTo(this.controls.target);
-    const halfHeight = Math.max(distance * Math.tan(19 * DEG), this.modelRadius * 0.05);
+    const halfHeight = Math.max(distance * Math.tan(19 * DEG), this.contentRadius * 0.05);
     this.ortho.left = -halfHeight * aspect;
     this.ortho.right = halfHeight * aspect;
     this.ortho.top = halfHeight;
@@ -388,7 +566,7 @@ export class ModelScene {
   /* ----------------------------------------------------------------- Ansichten */
 
   setView(view: StandardView): void {
-    const target = new THREE.Vector3(0, 0, this.modelSize.z / 2);
+    const target = this.contentCenter.clone();
     const distance = this.fitDistance();
 
     const directions: Record<StandardView, [number, number, number]> = {
@@ -425,12 +603,12 @@ export class ModelScene {
     // Bei hochkantem Fenster begrenzt die BREITE, nicht die Hoehe.
     const hFov = 2 * Math.atan(Math.tan(vFov / 2) * aspect);
     const limiting = Math.min(vFov, hFov);
-    return (this.modelRadius / Math.sin(limiting / 2)) * 1.12;
+    return (this.contentRadius / Math.sin(limiting / 2)) * 1.12;
   }
 
   frameModel(): void {
     const distance = this.fitDistance();
-    const target = new THREE.Vector3(0, 0, this.modelSize.z / 2);
+    const target = this.contentCenter.clone();
     const dir = this.camera.position.clone().sub(this.controls.target).normalize();
     this.camera.position.copy(target.clone().addScaledVector(dir, distance));
     this.controls.target.copy(target);
@@ -580,14 +758,23 @@ export class ModelScene {
    * Bild, und zwar zuverlaessig erst auf fremden Rechnern.
    */
   capture(options: CaptureOptions): string {
-    const { width, height, clean = false, transparent = false, markers } = options;
+    const {
+      width,
+      height,
+      clean = false,
+      hideReference = false,
+      transparent = false,
+      markers,
+    } = options;
     const previousSize = new THREE.Vector2();
     this.renderer.getSize(previousSize);
     const previousRatio = this.renderer.getPixelRatio();
     const previousBackground = this.scene.background;
     const helpersVisible = this.helpers.visible;
+    const referenceVisible = this.referenceRoot.visible;
 
     if (clean) this.helpers.visible = false;
+    if (hideReference) this.referenceRoot.visible = false;
     if (transparent) this.scene.background = null;
 
     this.renderer.setPixelRatio(1);
@@ -622,6 +809,7 @@ export class ModelScene {
     }
 
     this.helpers.visible = helpersVisible;
+    this.referenceRoot.visible = referenceVisible;
     this.scene.background = previousBackground;
     this.renderer.setPixelRatio(previousRatio);
     this.renderer.setSize(previousSize.x, previousSize.y, false);
@@ -722,7 +910,7 @@ export class ModelScene {
     this.perspective.updateProjectionMatrix();
     if (this.camera === this.ortho) {
       const distance = this.camera.position.distanceTo(this.controls.target);
-      const halfHeight = Math.max(distance * Math.tan(19 * DEG), this.modelRadius * 0.05);
+      const halfHeight = Math.max(distance * Math.tan(19 * DEG), this.contentRadius * 0.05);
       this.ortho.left = -halfHeight * aspect;
       this.ortho.right = halfHeight * aspect;
       this.ortho.top = halfHeight;

@@ -5,25 +5,42 @@
  * diesem Bereich auch kein einziger Wert, der spaeter in einem Dokument landet.
  */
 
-import type { T } from "../../i18n";
-import type { ClipState, RenderMode, ViewState } from "../../viewer/types";
-import { MODEL_COLORS } from "../../viewer/types";
-import { cx, SegmentedControl, Section, Slider, Toggle } from "../ui";
+import type { Lang, T } from "../../i18n";
+import * as fmt from "../../lib/format";
+import type { OverhangResult } from "../../lib/overhang";
+import type { ClipState, OverhangState, RenderMode, ViewState } from "../../viewer/types";
+import { MODEL_COLORS, OVERHANG_COLOR } from "../../viewer/types";
+import { referenceInfo, SCALE_REFERENCES } from "../../viewer/reference";
+import { cx, SegmentedControl, Section, Select, Slider, Toggle } from "../ui";
 
 export function DisplayPanel({
   t,
+  lang,
   view,
   onChange,
   canShowEdges,
+  overhang,
 }: {
   t: T;
+  lang: Lang;
   view: ViewState;
   onChange: (next: ViewState) => void;
   canShowEdges: boolean;
+  overhang: OverhangResult | null;
 }) {
   const patch = (partial: Partial<ViewState>): void => onChange({ ...view, ...partial });
   const patchClip = (partial: Partial<ClipState>): void =>
     onChange({ ...view, clip: { ...view.clip, ...partial } });
+  const patchOverhang = (partial: Partial<OverhangState>): void =>
+    onChange({ ...view, overhang: { ...view.overhang, ...partial } });
+
+  const reference = referenceInfo(view.scaleReference);
+  const referenceSize = reference.size;
+  const referenceSource = reference.source
+    ? lang === "de"
+      ? reference.source.de
+      : reference.source.en
+    : null;
 
   return (
     <>
@@ -104,6 +121,82 @@ export function DisplayPanel({
               label={t("build.show")}
             />
           </div>
+        </div>
+      </Section>
+
+      <Section title={t("scale.title")}>
+        <div className="surface p-3">
+          <Select
+            label={t("scale.label")}
+            value={view.scaleReference}
+            onChange={(scaleReference) => patch({ scaleReference })}
+            options={SCALE_REFERENCES.map((r) => ({
+              value: r.id,
+              label: lang === "de" ? r.de : r.en,
+            }))}
+          />
+          <p className="text-[11px] muted mt-2 leading-snug">{t("scale.hint")}</p>
+          {referenceSize && (
+            <p className="text-[11px] muted mt-1.5 num">
+              {t("scale.size")}: {referenceSize.x} × {referenceSize.y} × {referenceSize.z} mm
+              {referenceSource && <span className="ml-1">({referenceSource})</span>}
+            </p>
+          )}
+          {view.scaleReference !== "none" && (
+            <p className="text-[11px] muted mt-1 leading-snug">{t("scale.inCover")}</p>
+          )}
+        </div>
+      </Section>
+
+      <Section title={t("overhang.title")}>
+        <div className="surface p-3">
+          <Toggle
+            checked={view.overhang.enabled}
+            onChange={(enabled) => patchOverhang({ enabled })}
+            label={t("overhang.enable")}
+            hint={t("overhang.hint")}
+          />
+
+          {view.overhang.enabled && (
+            <div className="mt-2 space-y-2">
+              <Slider
+                label={t("overhang.threshold")}
+                min={10}
+                max={80}
+                step={5}
+                value={view.overhang.degrees}
+                onChange={(degrees) => patchOverhang({ degrees })}
+                display={`${view.overhang.degrees}°`}
+              />
+
+              {overhang && (
+                <div className="pt-2 border-t border-hairline dark:border-[#1E2B3D]">
+                  {overhang.overhangTriangles === 0 ? (
+                    <p className="text-sm text-good leading-snug">{t("overhang.none")}</p>
+                  ) : (
+                    <p className="flex items-baseline gap-2">
+                      <span
+                        aria-hidden="true"
+                        className="inline-block w-3 h-3 rounded-sm shrink-0"
+                        style={{ background: OVERHANG_COLOR }}
+                      />
+                      <span className="text-sm font-medium num">
+                        {t("overhang.result", {
+                          p: fmt.num(overhang.fraction * 100, lang, 1),
+                          area: fmt.area(overhang.overhangAreaMm2, lang),
+                        })}
+                      </span>
+                    </p>
+                  )}
+                  <p className="text-[11px] muted mt-1.5 leading-snug">{t("overhang.plateNote")}</p>
+                  <p className="text-[11px] muted mt-1 leading-snug">
+                    {t("overhang.orientationNote")}
+                  </p>
+                  <p className="text-[11px] muted mt-1 leading-snug">{t("overhang.limit")}</p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </Section>
 

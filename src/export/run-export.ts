@@ -134,7 +134,10 @@ export async function runPdfExport(context: ExportContext): Promise<jsPDF> {
       for (const view of STANDARD_VIEW_ORDER) {
         guard();
         scene.setView(view);
-        standardViews.push({ view, image: scene.capture({ ...shot, clean: true }) });
+        standardViews.push({
+          view,
+          image: scene.capture({ ...shot, clean: true, hideReference: true }),
+        });
         step();
         await nextFrame();
       }
@@ -148,6 +151,7 @@ export async function runPdfExport(context: ExportContext): Promise<jsPDF> {
       guard();
       const images = await scene.captureTurntable(axis as Axis, options.perAxis, {
         ...shot,
+        hideReference: true,
         onStep: () => step(),
       });
       turntables.push({ axis: axis as Axis, images });
@@ -166,6 +170,7 @@ export async function runPdfExport(context: ExportContext): Promise<jsPDF> {
       annotationOverview = scene.capture({
         ...shot,
         clean: true,
+        hideReference: true,
         markers: annotations.map((a) => toMarker(a)),
       });
       step();
@@ -181,6 +186,7 @@ export async function runPdfExport(context: ExportContext): Promise<jsPDF> {
           scene.captureFromCamera(annotation.camera, {
             ...shot,
             clean: true,
+            hideReference: true,
             markers: [toMarker(annotation)],
           }),
         );

@@ -208,6 +208,49 @@ const S = {
   "bg.dunkel": { de: "Dunkel", en: "Dark" },
   "bg.verlauf": { de: "Verlauf", en: "Gradient" },
 
+  /* --------------------------------------------------------- Groessenvergleich */
+  "scale.title": { de: "Größenvergleich", en: "Size reference" },
+  "scale.label": { de: "Referenzobjekt", en: "Reference object" },
+  "scale.hint": {
+    de: "Stellt einen bekannten Gegenstand neben das Modell. Am Bildschirm sieht ein 60-mm-Teil genauso groß aus wie ein 2,4-m-Exponat — daneben nicht mehr.",
+    en: "Places a familiar object next to the model. On screen a 60 mm part looks the same size as a 2.4 m exhibit — next to a reference it no longer does.",
+  },
+  "scale.size": { de: "Maße", en: "Dimensions" },
+  "scale.inCover": {
+    de: "Erscheint auch auf dem Deckblatt der PDF-Dokumentation.",
+    en: "Also appears on the cover page of the PDF documentation.",
+  },
+
+  /* ---------------------------------------------------------------- Ueberhang */
+  "overhang.title": { de: "Überhänge", en: "Overhangs" },
+  "overhang.enable": { de: "Überhänge einfärben", en: "Highlight overhangs" },
+  "overhang.hint": {
+    de: "Färbt Flächen ein, die flacher als die Schwelle nach unten zeigen. Dort braucht der Druck Stützmaterial — und die Oberfläche wird dort rauer.",
+    en: "Colours faces that point downward at a shallower angle than the threshold. The print needs support material there — and the surface comes out rougher.",
+  },
+  "overhang.threshold": { de: "Schwelle gegen die Waagerechte", en: "Angle from horizontal" },
+  "overhang.share": { de: "Stützfläche", en: "Support area" },
+  "overhang.result": {
+    de: "{p} % der Oberfläche ({area})",
+    en: "{p} % of the surface ({area})",
+  },
+  "overhang.none": {
+    de: "Keine Fläche unterhalb der Schwelle. In dieser Lage kommt der Druck ohne Stützen aus.",
+    en: "No face below the threshold. In this orientation the print needs no support.",
+  },
+  "overhang.plateNote": {
+    de: "Die Standfläche zählt nicht mit — sie zeigt zwar nach unten, liegt aber auf der Bauplatte.",
+    en: "The face resting on the plate does not count — it points downward but sits on the build plate.",
+  },
+  "overhang.limit": {
+    de: "Betrachtet die Neigung jeder Fläche, nicht ob darunter Bauteil steht. Eine Fläche, die auf dem Modell selbst aufliegt, wird hier trotzdem markiert. Die Stützmenge rechnet nur ein Slicer.",
+    en: "Considers the tilt of each face, not whether the part supports it from below. A face resting on the model itself is still marked. Only a slicer computes the amount of support.",
+  },
+  "overhang.orientationNote": {
+    de: "Gilt für die Lage in der Datei. Gedreht gedruckt ändert sich das Ergebnis.",
+    en: "Applies to the orientation in the file. Printed rotated, the result changes.",
+  },
+
   "clip.title": { de: "Schnittebene", en: "Section plane" },
   "clip.enable": { de: "Schnitt anzeigen", en: "Show section" },
   "clip.axis": { de: "Achse", en: "Axis" },

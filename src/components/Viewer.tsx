@@ -14,6 +14,7 @@ import * as THREE from "three";
 
 import type { T } from "../i18n";
 import * as fmt from "../lib/format";
+import type { OverhangResult } from "../lib/overhang";
 import type { Lang } from "../i18n";
 import type { LoadedModel } from "../stl/load";
 import { ModelScene, type HitResult } from "../viewer/scene";
@@ -53,6 +54,7 @@ export interface ViewerProps {
   onPick: (hit: HitResult) => void;
   onSelectAnnotation: (id: string) => void;
   onTool: (tool: ToolMode) => void;
+  onOverhang: (stats: OverhangResult | null) => void;
   t: T;
   lang: Lang;
 }
@@ -71,6 +73,7 @@ export function Viewer(props: ViewerProps) {
     onPick,
     onSelectAnnotation,
     onTool,
+    onOverhang,
     t,
     lang,
   } = props;
@@ -119,6 +122,13 @@ export function Viewer(props: ViewerProps) {
       new THREE.Vector3(bbox.size.x, bbox.size.y, bbox.size.z),
     );
   }, [model]);
+
+  // Vor applyViewState eintragen, sonst geht die erste Meldung verloren: Wird
+  // die Ueberhang-Ansicht im selben Durchgang eingeschaltet, in dem der
+  // Rueckruf gesetzt wird, rechnet die Szene bereits — und meldet ins Leere.
+  useEffect(() => {
+    if (sceneRef.current) sceneRef.current.onOverhangChanged = onOverhang;
+  }, [onOverhang]);
 
   useEffect(() => {
     sceneRef.current?.applyViewState(viewState, buildVolume);
