@@ -1,6 +1,16 @@
 /** Gemeinsame Typen fuer Parser, Analyse und Worker-Protokoll. */
 
-export type StlFormat = "binary" | "ascii";
+import type { StepQuality } from "./step-mesh";
+
+/**
+ * "step" steht bewusst neben den beiden STL-Formen.
+ *
+ * Ein STEP ist etwas anderes als ein Dreiecksnetz: Es beschreibt Flaechen exakt.
+ * Was der Betrachter davon anzeigt und misst, ist die TESSELLIERUNG — eine
+ * Annaeherung, deren Feinheit eingestellt wird. Die Unterscheidung wandert
+ * deshalb bis in die Oberflaeche und ins PDF durch, statt hier zu enden.
+ */
+export type StlFormat = "binary" | "ascii" | "step";
 
 export interface ParsedStl {
   /** 9 Werte je Dreieck (3 Eckpunkte x/y/z), nicht indiziert. */
@@ -75,6 +85,16 @@ export interface WorkerRequest {
   scale: number;
 }
 
+export interface StepWorkerRequest {
+  id: number;
+  buffer: ArrayBuffer;
+  /**
+   * Feinheit der Tessellierung. KEIN Skalierungsfaktor — ein STEP traegt seine
+   * Einheit in der Datei, OpenCascade rechnet sie auf Millimeter um.
+   */
+  quality: StepQuality;
+}
+
 export type WorkerResponse =
   | { id: number; kind: "progress"; phase: "parse" | "analyse"; ratio: number }
   | {
@@ -85,6 +105,8 @@ export type WorkerResponse =
       format: StlFormat;
       solidName: string | null;
       trailingBytes: number;
+      /** Nur bei STEP: Zahl der zusammengelegten Einzelkoerper. */
+      parts?: number;
       stats: MeshStats;
     }
   | { id: number; kind: "error"; message: string; code: StlErrorCode };
@@ -95,4 +117,5 @@ export type StlErrorCode =
   | "not-stl"
   | "no-triangles"
   | "truncated"
-  | "out-of-memory";
+  | "out-of-memory"
+  | "step-failed";

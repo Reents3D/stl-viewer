@@ -8,6 +8,7 @@
  */
 
 import type { Lang, T } from "../i18n";
+import type { StepQuality } from "../stl/step-mesh";
 import { SITE } from "../config/site";
 import { Footer } from "./Chrome";
 import { Button, Card, Disclosure, Icon, ICONS } from "./ui";
@@ -21,6 +22,8 @@ export function StartScreen({
   lang,
   unit,
   onUnit,
+  quality,
+  onQuality,
   onPick,
   error,
 }: {
@@ -28,6 +31,8 @@ export function StartScreen({
   lang: Lang;
   unit: UnitChoice;
   onUnit: (unit: UnitChoice) => void;
+  quality: StepQuality;
+  onQuality: (quality: StepQuality) => void;
   onPick: () => void;
   error: { title: string; detail: string } | null;
 }) {
@@ -59,10 +64,10 @@ export function StartScreen({
           </span>
           <span className="block font-display font-bold text-lg mb-1">{t("drop.title")}</span>
           <span className="block text-sm muted mb-5">{t("drop.button")}</span>
-          <span className="inline-block text-xs muted">STL · binär &amp; ASCII</span>
+          <span className="inline-block text-xs muted">STL · STEP · STP</span>
         </button>
 
-        <div className="mt-5 grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end">
+        <div className="mt-5 grid gap-4 sm:grid-cols-2">
           <fieldset>
             <legend className="text-xs muted mb-1.5">{t("drop.units")}</legend>
             <div className="flex rounded-xl border border-hairline dark:border-[#1E2B3D] overflow-hidden">
@@ -88,8 +93,37 @@ export function StartScreen({
                 </button>
               ))}
             </div>
+            <p className="text-[11px] muted leading-snug mt-1.5">{t("drop.unitHint")}</p>
+            <p className="text-[11px] muted leading-snug mt-1">{t("step.unitNote")}</p>
           </fieldset>
-          <p className="text-[11px] muted leading-snug sm:max-w-[16rem]">{t("drop.unitHint")}</p>
+
+          <fieldset>
+            <legend className="text-xs muted mb-1.5">{t("step.quality")}</legend>
+            <div className="flex rounded-xl border border-hairline dark:border-[#1E2B3D] overflow-hidden">
+              {(
+                [
+                  ["grob", t("step.qualityCoarse")],
+                  ["mittel", t("step.qualityMedium")],
+                  ["fein", t("step.qualityFine")],
+                ] as const
+              ).map(([value, label]) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => onQuality(value)}
+                  aria-pressed={quality === value}
+                  className={
+                    quality === value
+                      ? "flex-1 px-3 py-2 text-xs font-medium bg-petrol-700 text-canvas dark:bg-petrol-300 dark:text-ink"
+                      : "flex-1 px-3 py-2 text-xs font-medium hover:bg-petrol-50 dark:hover:bg-white/5"
+                  }
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <p className="text-[11px] muted leading-snug mt-1.5">{t("step.qualityHint")}</p>
+          </fieldset>
         </div>
 
         {/* ------------------------------------------------------- Datenschutz */}
@@ -107,7 +141,8 @@ export function StartScreen({
           <div className="mt-3 pl-12">
             <Disclosure summary={t("privacy.open")}>
               <p className="mb-2">{t("privacy.p2")}</p>
-              <p>{t("privacy.p3")}</p>
+              <p className="mb-2">{t("privacy.p3")}</p>
+              <p>{t("privacy.p4")}</p>
             </Disclosure>
           </div>
         </Card>

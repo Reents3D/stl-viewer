@@ -20,11 +20,12 @@ Bisher hieß die Lösung: Screenshots aus verschiedenen Winkeln, per E-Mail hin 
 und Änderungswünsche in Worten — „das Loch oben links, nein, das andere". Das kostet
 Runden, und Missverständnisse fallen erst im Druck auf.
 
-Mit diesem Werkzeug öffnet der Kunde die Datei einfach im Browser. Er dreht das Modell,
-markiert die Stellen, um die es geht, schreibt seine Änderungswünsche daneben — und
-erzeugt daraus eine Dokumentation: das Modell aus allen Richtungen, dazu jede Markierung
-als eigenes Bild mit dem zugehörigen Text. Dieses PDF geht zurück in die Konstruktion,
-und dort ist ohne Rückfrage klar, welche Stelle gemeint war.
+Mit diesem Werkzeug öffnet der Kunde die Datei einfach im Browser — **STL oder STEP**,
+also auch das Format, in dem eine parametrische Konstruktion das Haus verlässt. Er dreht
+das Modell, markiert die Stellen, um die es geht, schreibt seine Änderungswünsche daneben
+— und erzeugt daraus eine Dokumentation: das Modell aus allen Richtungen, dazu jede
+Markierung als eigenes Bild mit dem zugehörigen Text. Dieses PDF geht zurück in die
+Konstruktion, und dort ist ohne Rückfrage klar, welche Stelle gemeint war.
 
 Nebenbei löst es das zweite Problem, das bei Konstruktionsdaten immer mitkommt: Die
 Datei wird nirgendwohin hochgeladen. Sie bleibt auf dem Rechner des Kunden.
@@ -91,16 +92,26 @@ Es gibt keinen Upload. Die Datei wird im Arbeitsspeicher Ihres Browsers gelesen 
 angezeigt; wenn Sie den Reiter schließen, ist sie weg. Kein Konto, keine Cookies, kein
 Tracking.
 
-Das ist keine Zusage, der Sie glauben müssen. Die Seite verbietet sich selbst per
-Inhaltssicherheitsrichtlinie **jede** ausgehende Netzwerkverbindung:
+Das ist keine Zusage, der Sie glauben müssen. Die Seite lässt per
+Inhaltssicherheitsrichtlinie nur Anfragen an ihre **eigene Herkunft** zu — und die
+liefert Dateien aus, sie nimmt keine entgegen:
 
 ```
-connect-src 'none'
+connect-src 'self'
 ```
 
-Der Browser lässt eine Übertragung technisch nicht zu — auch nicht versehentlich. Wenn
-Sie es nachsehen wollen: Entwicklerwerkzeuge öffnen, Reiter „Netzwerk", Datei
-hineinziehen. Dort passiert nichts.
+Nach draußen kann der Browser aus dieser Seite nichts senden, auch nicht versehentlich.
+Wenn Sie es nachsehen wollen: Entwicklerwerkzeuge öffnen, Reiter „Netzwerk", Datei
+hineinziehen. Beim Öffnen einer **STL** erscheint dort genau ein Eintrag — der
+Auswertungsstrang des Werkzeugs selbst, vom selben Server.
+
+Nur beim Öffnen einer **STEP-Datei** kommt einmalig die Umwandlungsbibliothek dazu
+(7,4 MB WebAssembly, ebenfalls vom selben Server). Sie rechnet im Browser; Ihre Datei
+geht auch dabei nirgendwohin.
+
+> Bis zum 4. August 2026 stand hier `connect-src 'none'` — der Browser ließ überhaupt
+> keine Anfrage zu. Das war die stärkere Zusage und ist mit der STEP-Unterstützung
+> gefallen. Die Abwägung steht offen in [ADR-013](DECISIONS.md).
 
 Für Bauteile unter Geheimhaltung ist das der eigentliche Unterschied: Sie müssen Ihren
 Prototypen nicht erst auf einen fremden Server laden, um ihn anzusehen.
@@ -109,6 +120,9 @@ Prototypen nicht erst auf einen fremden Server laden, um ihn anzusehen.
 
 **[reents3d.github.io/stl-viewer](https://reents3d.github.io/stl-viewer/)** — im Browser
 öffnen, Datei hineinziehen. Sonst nichts.
+
+Gelesen werden **STL** (binär und ASCII) und **STEP** (`.step`, `.stp`). Bei STEP
+entfällt die Einheitenwahl — sie steht in der Datei.
 
 Läuft in jedem aktuellen Browser mit WebGL, auch auf Tablet und Telefon. Bei sehr großen
 Modellen (über ein paar Millionen Dreiecke) ist ein Rechner die bessere Wahl — dort
@@ -147,6 +161,14 @@ weiterhin.
 „passt" heißt: Der Hüllkörper geht hinein. Es heißt nicht, dass die Fertigung in dieser
 Lage sinnvoll ist.
 
+**Bei STEP beziehen sich alle Werte auf die Tessellierung.** Ein STEP beschreibt Flächen
+exakt; zum Anzeigen und Rechnen wird daraus ein Dreiecksnetz. Ein Zylinder wird dabei zum
+Vieleck — Volumen und Oberfläche liegen deshalb geringfügig unter den exakten Werten. Wie
+fein genähert wird, stellen Sie beim Öffnen ein; die Oberfläche weist die gewählte Stufe
+aus. Enthält die Datei eine **Baugruppe**, werden alle Körper zu einem Modell
+zusammengelegt, und Volumen wie Gewicht sind die Summe aller Teile — auch das steht dann
+in der Seitenleiste.
+
 Alle Werte beschreiben die **Geometrie der Datei** — nicht ein gefertigtes Bauteil. Für
 eine Kalkulation ist die Berechnung eines Slicers mit dem tatsächlichen Druckprofil
 maßgeblich. Ausführlich in [DISCLAIMER.md](DISCLAIMER.md).
@@ -155,8 +177,8 @@ maßgeblich. Ausführlich in [DISCLAIMER.md](DISCLAIMER.md).
 
 ## Für Entwickler
 
-Vite, React, TypeScript, Tailwind 4, three.js, jsPDF. Kein Server, kein Backend, kein
-Build-Schritt zur Laufzeit.
+Vite, React, TypeScript, Tailwind 4, three.js, jsPDF, occt-import-js (nur für STEP,
+nachgeladen). Kein Server, kein Backend, kein Build-Schritt zur Laufzeit.
 
 | Befehl | Zweck |
 | --- | --- |
@@ -171,6 +193,7 @@ Build-Schritt zur Laufzeit.
 ```
 src/
   stl/          Parser und Geometrie — ohne three.js, läuft auch unter Node
+                (STL selbst geschrieben, STEP über OpenCascade als WebAssembly)
   viewer/       three.js-Szene, vollständig gekapselt
   export/       PDF, Bild, Anmerkungsdatei
   components/   Oberfläche
@@ -187,7 +210,9 @@ spart außerdem eine vollständige Kopie des Positionsfeldes.
 STL kommt aus CAD und aus Slicern, dort ist Z die Bauhöhe. So heißt die Höhe in der Datei,
 in der Anzeige und im PDF gleich.
 
-**Es gibt kein `fetch` in diesem Projekt, und es darf keines geben.** Die Pipeline prüft
+**Im eigenen Quelltext gibt es kein `fetch`, und es darf keines geben.** Die einzige
+Anfrage, die je entsteht, holt die WebAssembly für den STEP-Import — von der eigenen
+Herkunft, aus dem Worker heraus. Die Pipeline prüft
 das gebaute Artefakt auf die Richtlinie und den Quelltext auf ausgehende Aufrufe. Details
 und die übrigen Entscheidungen mit Nebenwirkungen: [DECISIONS.md](DECISIONS.md).
 
@@ -215,6 +240,12 @@ Datei.
 
 ## Lizenz
 
-Code unter MIT-Lizenz, siehe [LICENSE](LICENSE). Die Werkstoffdichten stammen aus der
-offenen Materialdatenbank der Reents Technologies GmbH (CC BY 4.0). Marken Dritter
-gehören ihren Inhabern.
+Eigener Code unter MIT-Lizenz, siehe [LICENSE](LICENSE).
+
+Der STEP-Import nutzt [occt-import-js](https://github.com/kovacsv/occt-import-js)
+(**LGPL-2.1**) mit Open CASCADE Technology. Die Bibliothek wird unverändert und als
+eigenständige Datei ausgeliefert und lässt sich austauschen — Einzelheiten und die
+übrigen Bestandteile in [THIRD-PARTY.md](THIRD-PARTY.md).
+
+Die Werkstoffdichten stammen aus der offenen Materialdatenbank der Reents Technologies
+GmbH (CC BY 4.0). Marken Dritter gehören ihren Inhabern.

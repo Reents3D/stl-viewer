@@ -12,21 +12,38 @@ import tailwindcss from "@tailwindcss/vite";
  * greift dieselbe Richtlinie ohne Nebenwirkung.
  *
  * WARUM SIE HIER MEHR IST ALS VORSORGE
- * Der Materialberater rechnet mit oeffentlichen Datenblattwerten. Dieses Werkzeug
- * bekommt Konstruktionsdaten von Kunden in die Hand — Prototypen, Bauteile unter
- * Geheimhaltung. Die Zusage "die Datei verlaesst Ihren Rechner nicht" darf keine
- * Behauptung sein, die man glauben muss.
+ * Dieses Werkzeug bekommt Konstruktionsdaten von Kunden in die Hand — Prototypen,
+ * Bauteile unter Geheimhaltung. Die Zusage "die Datei verlaesst Ihren Rechner
+ * nicht" darf keine Behauptung sein, die man glauben muss.
  *
- *   connect-src 'none'   Der Browser LAESST keine Netzwerkanfrage aus dieser Seite
- *                        heraus zu — kein fetch, kein XHR, kein WebSocket, kein
- *                        sendBeacon. Nicht "wir tun es nicht", sondern "es geht
- *                        nicht". Genau das ist der Unterschied, den ein Kunde mit
- *                        offenem Netzwerk-Reiter in zehn Sekunden selbst nachprueft.
- *                        Folge fuer die Entwicklung: In diesem Projekt darf nie ein
- *                        fetch() entstehen. Es wuerde erst im Build auffallen.
- *   worker-src 'self'    Der STL-Parser laeuft in einem Web Worker, damit grosse
- *                        Dateien die Oberflaeche nicht einfrieren. Vite legt ihn als
- *                        eigene Datei neben das Buendel — gleiche Herkunft, kein blob:.
+ *   connect-src 'self'   Der Browser laesst aus dieser Seite heraus nur Anfragen
+ *                        an die EIGENE Herkunft zu. Nach draussen geht nichts —
+ *                        kein fremder Server, kein Zaehlpixel, kein Abtransport
+ *                        einer geoeffneten Datei. Die eigene Herkunft ist ein
+ *                        statischer Dateiserver; er liefert aus und nimmt nichts
+ *                        entgegen.
+ *
+ *                        Bis 2026-08-04 stand hier 'none' — der Browser liess
+ *                        ueberhaupt keine Anfrage zu. Das war die staerkere
+ *                        Zusage und ist mit dem STEP-Import gefallen: Die
+ *                        7,4-MB-WebAssembly von OpenCascade wird per fetch
+ *                        geholt, und fetch faellt unter diese Richtung. Die
+ *                        Abwaegung steht in ADR-013.
+ *
+ *                        Was gleich bleibt: Beim Oeffnen einer STL passiert im
+ *                        Netzwerk-Reiter nach wie vor nichts. Erst eine
+ *                        STEP-Datei loest genau eine Anfrage aus, an die eigene
+ *                        Herkunft, fuer eine statische Datei.
+ *   script-src           braucht 'wasm-unsafe-eval': Ohne diese Angabe lehnt der
+ *                        Browser das Uebersetzen von WebAssembly ab
+ *                        ("Compiling or instantiating WebAssembly module
+ *                        violates CSP"). Die Freigabe ist eng — sie erlaubt
+ *                        WebAssembly, aber weiterhin kein eval() und kein
+ *                        Inline-Skript.
+ *   worker-src 'self'    Beide Parser laufen in Web Workern, damit grosse Dateien
+ *                        die Oberflaeche nicht einfrieren. Vite legt sie als
+ *                        eigene Dateien neben das Buendel — gleiche Herkunft,
+ *                        kein blob:.
  *   img-src ... blob:    Die Aufnahmen fuer das PDF entstehen als Blob aus dem
  *                        Zeichenbereich; ohne blob: bleibt die Vorschau leer.
  *   style-src            braucht 'unsafe-inline': React setzt Stilattribute direkt am
@@ -37,11 +54,11 @@ import tailwindcss from "@tailwindcss/vite";
  */
 const CSP = [
   "default-src 'self'",
-  "script-src 'self'",
+  "script-src 'self' 'wasm-unsafe-eval'",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self'",
-  "connect-src 'none'",
+  "connect-src 'self'",
   "manifest-src 'self'",
   "worker-src 'self'",
   "object-src 'none'",

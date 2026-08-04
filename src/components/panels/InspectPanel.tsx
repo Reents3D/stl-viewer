@@ -14,7 +14,15 @@ import { compactness, estimateMass, FILIGREE_THRESHOLD } from "../../lib/estimat
 import * as fmt from "../../lib/format";
 import { fitsInBuildVolume } from "../../stl/geometry";
 import type { LoadedModel } from "../../stl/load";
+import type { StepQuality } from "../../stl/step-mesh";
 import { Chip, ConfidenceMark, DataRow, Disclosure, Icon, ICONS, Section, Select, Slider } from "../ui";
+
+/** Schluesselteil fuer die i18n-Beschriftung der Tessellierungsguete. */
+function qualityKey(quality: StepQuality | undefined): "Coarse" | "Medium" | "Fine" {
+  if (quality === "grob") return "Coarse";
+  if (quality === "fein") return "Fine";
+  return "Medium";
+}
 
 export function InspectPanel({
   t,
@@ -76,11 +84,32 @@ export function InspectPanel({
           )}
           <DataRow
             label={t("stats.format")}
-            value={model.format === "binary" ? "Binär-STL" : "ASCII-STL"}
+            value={
+              model.format === "step"
+                ? "STEP"
+                : model.format === "binary"
+                  ? "Binär-STL"
+                  : "ASCII-STL"
+            }
           />
           <DataRow label={t("stats.fileSize")} value={fmt.fileSize(model.fileSize, lang)} />
           {model.solidName && <DataRow label={t("stats.modelName")} value={model.solidName} />}
         </div>
+
+        {/* Bei STEP beziehen sich ALLE Zahlen darueber auf die Tessellierung.
+            Der Hinweis steht deshalb direkt darunter und nicht im Kleingedruckten. */}
+        {model.format === "step" && (
+          <div className="mt-2 space-y-1.5">
+            <p className="text-[11px] text-ok leading-snug">
+              {t("step.approximation", { q: t(`step.quality${qualityKey(model.quality)}`) })}
+            </p>
+            {(model.parts ?? 1) > 1 && (
+              <p className="text-[11px] text-ok leading-snug">
+                {t("step.assembly", { n: model.parts ?? 1 })}
+              </p>
+            )}
+          </div>
+        )}
       </Section>
 
       <Findings t={t} lang={lang} model={model} />

@@ -27,24 +27,24 @@ Diese Datei ist der Arbeitsstand, nicht die Doku — was das Werkzeug kann, steh
   in der Liste, unter 1,5 mm rot. Sieben Tests in `tests/lib/thickness.test.ts`.
 - **Versionsvergleich**: zweite STL durchscheinend darüber, Volumen- und
   Maßdifferenz mit Vorzeichen. Ausrichtung über den gemeinsamen CAD-Nullpunkt.
-- 74 Tests, CI und Pages-Auslieferung grün
+- **STEP-Import** (.step/.stp) über OpenCascade als WebAssembly, nur bei Bedarf
+  nachgeladen. Einheit kommt aus der Datei, Tessellierungsgüte einstellbar,
+  Baugruppen werden zusammengelegt und als solche ausgewiesen.
+- 84 Tests, CI und Pages-Auslieferung grün
 
 ## Offen
 
-### STEP-Import
+Keine der beschlossenen Funktionen mehr. Naheliegende nächste Schritte, falls
+weitergebaut wird:
 
-Siehe [ADR-013](DECISIONS.md). Beschlossen einschließlich der Lockerung der
-Richtlinie auf `connect-src 'self'` und `'wasm-unsafe-eval'`. Umfang:
-
-- `occt-import-js` als Abhängigkeit, WASM **nur bei einer STEP-Datei** nachladen
-- Richtlinie in `vite.config.ts` ändern **und** `scripts/check-artifact.mjs`
-  mitziehen — sonst schlägt die eigene Prüfung fehl
-- README und Startseite umformulieren: aus „kann nichts senden" wird „darf nur mit
-  der eigenen Herkunft reden, und die nimmt nichts entgegen"
-- In der Oberfläche ausweisen, dass Volumen und Befund sich auf die
-  **Tessellierung** beziehen, nicht auf die exakten Flächen
-- Einheitenwahl entfällt bei STEP — die Einheit steht in der Datei
-- LGPL-Hinweise und Lizenztext mitliefern
+- **IGES** liegt nach dem STEP-Import fast auf der Hand: `occt.ReadIgesFile` ist
+  dieselbe Bibliothek und liefert dasselbe Ergebnisformat, die Umwandlung in
+  `src/stl/step-mesh.ts` passt unverändert. Aufwand gering.
+- **Baugruppen getrennt zeigen** statt zusammengelegt — braucht eine Bauteilliste
+  mit Sichtbarkeitsschaltern und ist damit ein eigenes Vorhaben.
+- **Wandstärke flächig** statt punktweise (Farbkarte über das ganze Modell). Braucht
+  eine Beschleunigungsstruktur für die Strahlen; der punktweise Weg ist dafür schon
+  in `src/lib/thickness.ts` gekapselt.
 
 ## Offen aus dem Gespräch
 
@@ -61,7 +61,12 @@ Richtlinie auf `connect-src 'self'` und `'wasm-unsafe-eval'`. Umfang:
 4. Anmerkung setzen, Modell drehen, Marke bleibt an der richtigen Stelle
 5. PDF mit drei Achsen erzeugen — Bilderzahl stimmt mit der Ankündigung überein,
    und auf jeder Anmerkungsseite ist der Pin im Bild zu sehen
-6. **Netzwerk-Reiter offen lassen: beim Laden der STL darf keine Anfrage auftauchen**
+6. **Netzwerk-Reiter offen lassen:** Beim Laden einer STL darf genau ein Eintrag
+   erscheinen — der eigene Auswertungsstrang, von derselben Herkunft. Bei einer
+   STEP-Datei kommt einmalig die WebAssembly dazu, ebenfalls von derselben
+   Herkunft. Nichts sonst.
+7. STEP-Datei mit bekannten Maßen laden — Einheit muss aus der Datei kommen, und
+   die Seitenleiste muss den Tessellierungshinweis zeigen
 
 ### Hinweis zur Prüfung im Browser
 

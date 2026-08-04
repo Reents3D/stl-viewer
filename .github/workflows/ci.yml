@@ -24,12 +24,18 @@ jobs:
       - name: Artefakt pruefen (Richtlinie, externe Ressourcen)
         run: node scripts/check-artifact.mjs dist
 
-      - name: Keine ausgehenden Aufrufe im Quelltext
+      # Seit ADR-013 laesst die Richtlinie Anfragen an die EIGENE Herkunft zu -
+      # noetig fuer die WebAssembly des STEP-Imports. Damit aus dieser Oeffnung
+      # kein Einfallstor wird, darf der EIGENE Quelltext weiterhin keinen
+      # Netzwerkaufruf enthalten. Was OpenCascade intern tut, holt genau eine
+      # statische Datei von derselben Adresse.
+      - name: Keine ausgehenden Aufrufe im eigenen Quelltext
         run: |
           set -e
           if grep -rnE '\b(fetch|XMLHttpRequest|sendBeacon|WebSocket|EventSource)\s*\(' src/; then
             echo "FEHLER: ausgehender Aufruf im Quelltext gefunden."
-            echo "Dieses Projekt darf keine Netzwerkverbindung aufbauen - siehe ADR-001."
+            echo "Auch mit connect-src 'self' baut dieses Projekt keine Verbindung selbst auf."
+            echo "Siehe ADR-001 und ADR-013."
             exit 1
           fi
-          echo "Keine ausgehenden Aufrufe im Quelltext."
+          echo "Keine ausgehenden Aufrufe im eigenen Quelltext."

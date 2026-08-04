@@ -2,10 +2,11 @@
  * Zusammenschaltung: Zustand, Dateiannahme und die Wege zwischen den Bereichen.
  *
  * Alles, was ein Kunde anfasst, laeuft hier zusammen. Der Aufbau folgt einer
- * Regel: Die Datei ist der einzige Eingang, und sie geht nirgends hinaus. Es gibt
- * in diesem Projekt kein fetch, kein XHR und keinen Serveraufruf — die
- * Inhaltssicherheitsrichtlinie im Build wuerde ihn ohnehin blockieren
- * (connect-src 'none', siehe vite.config.ts).
+ * Regel: Die Datei ist der einzige Eingang, und sie geht nirgends hinaus. In
+ * diesem Quelltext gibt es kein fetch, kein XHR und keinen Serveraufruf; die
+ * Richtlinie im Build laesst ohnehin nur die eigene Herkunft zu (connect-src
+ * 'self', siehe vite.config.ts und ADR-013 — die einzige Anfrage, die je
+ * entsteht, holt die WebAssembly fuer den STEP-Import).
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -33,6 +34,7 @@ import {
   type ExportOptions,
 } from "./export/run-export";
 import { detectLang, makeT, type Lang } from "./i18n";
+import { DEFAULT_STEP_QUALITY, type StepQuality } from "./stl/step-mesh";
 import * as fmt from "./lib/format";
 import type { OverhangResult } from "./lib/overhang";
 import { fitsInBuildVolume } from "./stl/geometry";
@@ -55,6 +57,7 @@ export default function App() {
   const t = useMemo(() => makeT(lang), [lang]);
 
   const [unit, setUnit] = useState<UnitChoice>("mm");
+  const [stepQuality, setStepQuality] = useState<StepQuality>(DEFAULT_STEP_QUALITY);
   const [model, setModel] = useState<LoadedModel | null>(null);
   const [loading, setLoading] = useState<LoadProgress | null>(null);
   const [error, setError] = useState<{ code: StlErrorCode; message: string } | null>(null);
@@ -104,6 +107,7 @@ export default function App() {
 
       const handle = loadStl(file, {
         scale: UNIT_SCALE[unit],
+        quality: stepQuality,
         onProgress: setLoading,
       });
       loadRef.current = handle;
@@ -132,7 +136,7 @@ export default function App() {
           }
         });
     },
-    [t, unit],
+    [stepQuality, t, unit],
   );
 
   /**
@@ -150,7 +154,7 @@ export default function App() {
 
   const pickStl = useCallback(async () => {
     if (!confirmDiscard()) return;
-    const file = await pickFile(".stl,model/stl,application/sla");
+    const file = await pickFile(".stl,.step,.stp,model/stl,model/step,application/sla,application/step");
     if (file) openFiles([file]);
   }, [confirmDiscard, openFiles]);
 
@@ -163,10 +167,10 @@ export default function App() {
    * die Abweichung waere der Faktor 25,4 statt der Aenderung.
    */
   const loadCompare = useCallback(async () => {
-    const file = await pickFile(".stl,model/stl,application/sla");
+    const file = await pickFile(".stl,.step,.stp,model/stl,model/step,application/sla,application/step");
     if (!file || !model) return;
     try {
-      const loaded = await loadStl(file, { scale: model.scale }).promise;
+      const loaded = await loadStl(file, { scale: model.scale, quality: stepQuality }).promise;
       setCompareModel(loaded);
     } catch (cause: unknown) {
       setError({
@@ -174,7 +178,7 @@ export default function App() {
         message: cause instanceof Error ? cause.message : String(cause),
       });
     }
-  }, [model]);
+  }, [model, stepQuality]);
 
   /** Zurueck zur Startseite — bereit fuer die naechste Datei. */
   const goHome = useCallback(() => {
@@ -450,6 +454,8 @@ export default function App() {
           lang={lang}
           unit={unit}
           onUnit={setUnit}
+          quality={stepQuality}
+          onQuality={setStepQuality}
           onPick={pickStl}
           error={error ? { title: t("error.title"), detail: errorDetail(t, error) } : null}
         />
@@ -618,6 +624,7 @@ function errorDetail(t: ReturnType<typeof makeT>, error: { code: StlErrorCode; m
     "no-triangles": t("error.no-triangles"),
     truncated: t("error.truncated"),
     "out-of-memory": t("error.out-of-memory"),
+    "step-failed": t("error.step-failed"),
   }[error.code];
   // Die Meldung aus dem Parser steht DAHINTER, nicht anstelle: Sie nennt den
   // technischen Grund, den ein Konstrukteur braucht, um die Datei neu zu

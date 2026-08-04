@@ -21,13 +21,33 @@ const ok = [];
 /* ------------------------------------------------ 1. Richtlinie im Artefakt */
 
 for (const richtung of [
-  "connect-src 'none'",
+  "connect-src 'self'",
   "form-action 'none'",
-  "script-src 'self'",
+  "script-src 'self' 'wasm-unsafe-eval'",
   "object-src 'none'",
+  "base-uri 'self'",
 ]) {
   if (html.includes(richtung)) ok.push(`Richtlinie: ${richtung}`);
-  else fehler.push(`Richtlinie fehlt im Bau: ${richtung} (siehe ADR-001)`);
+  else fehler.push(`Richtlinie fehlt im Bau: ${richtung} (siehe ADR-001 und ADR-013)`);
+}
+
+/**
+ * Die Lockerung darf nicht weiter gehen als beschlossen.
+ *
+ * `connect-src 'self'` ist der Preis fuer STEP (ADR-013). Ein Platzhalter oder
+ * eine fremde Adresse waere etwas anderes — und genau so eine Aenderung rutscht
+ * unbemerkt durch, weil die Anwendung danach genauso funktioniert.
+ */
+for (const verboten of ["connect-src *", "connect-src 'unsafe", "script-src 'unsafe-eval'", "'unsafe-inline'" ]) {
+  // 'unsafe-inline' ist bei style-src bewusst gesetzt (React setzt Stilattribute
+  // direkt am Element) — nur bei script-src waere es ein Fehler.
+  const beiSkript = verboten === "'unsafe-inline'"
+    ? /script-src[^;]*'unsafe-inline'/.test(html)
+    : html.includes(verboten);
+  if (beiSkript) fehler.push(`Richtlinie zu weit geoeffnet: ${verboten}`);
+}
+if (!fehler.some((f) => f.startsWith("Richtlinie zu weit"))) {
+  ok.push("Keine unerlaubte Lockerung der Richtlinie");
 }
 
 /* ------------------------------------ 2. Keine LADENDEN Verweise nach aussen */

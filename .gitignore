@@ -10,4 +10,6 @@ coverage/
 # Testmodelle von Kunden gehoeren nie in die Historie.
 /testdaten/
 *.stl
+*.step
+*.stp
 !tests/fixtures/*.stl

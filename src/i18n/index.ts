@@ -22,10 +22,10 @@ const S = {
   "cta.advisor": { de: "Materialberater", en: "Material advisor" },
 
   /* ------------------------------------------------------------- Datei oeffnen */
-  "drop.title": { de: "STL-Datei hierher ziehen", en: "Drop an STL file here" },
+  "drop.title": { de: "STL oder STEP hierher ziehen", en: "Drop an STL or STEP file here" },
   "drop.sub": {
-    de: "Oder Datei auswählen. Binäres und ASCII-STL, beliebige Größe.",
-    en: "Or choose a file. Binary and ASCII STL, any size.",
+    de: "Oder Datei auswählen. STL binär und ASCII, STEP und STP — beliebige Größe.",
+    en: "Or choose a file. STL binary and ASCII, STEP and STP — any size.",
   },
   "drop.button": { de: "Datei auswählen", en: "Choose file" },
   "drop.release": { de: "Loslassen zum Öffnen", en: "Release to open" },
@@ -33,6 +33,33 @@ const S = {
     de: "Die Datei bleibt auf Ihrem Rechner. Es gibt keinen Upload.",
     en: "The file stays on your computer. There is no upload.",
   },
+  /* ---------------------------------------------------------------------- STEP */
+  "step.quality": { de: "Tessellierung (nur STEP)", en: "Tessellation (STEP only)" },
+  "step.qualityCoarse": { de: "Grob", en: "Coarse" },
+  "step.qualityMedium": { de: "Mittel", en: "Medium" },
+  "step.qualityFine": { de: "Fein", en: "Fine" },
+  "step.qualityHint": {
+    de: "STEP beschreibt Flächen exakt. Zum Anzeigen und Rechnen wird daraus ein Dreiecksnetz — feiner heißt genauer und langsamer.",
+    en: "STEP describes surfaces exactly. For display and computation it is turned into a triangle mesh — finer means more accurate and slower.",
+  },
+  "step.unitNote": {
+    de: "Für STEP entfällt die Einheitenwahl: Sie steht in der Datei und wird auf Millimeter umgerechnet.",
+    en: "For STEP no unit choice is needed: it is stored in the file and converted to millimetres.",
+  },
+  "step.loading": { de: "STEP wird geöffnet — OpenCascade wird geladen", en: "Opening STEP — loading OpenCascade" },
+  "step.approximation": {
+    de: "Angezeigt und gerechnet wird die Tessellierung ({q}), nicht die exakte Fläche. Ein Zylinder wird dabei zum Vieleck — Volumen und Oberfläche liegen deshalb geringfügig unter den exakten Werten.",
+    en: "Displayed and computed is the tessellation ({q}), not the exact surface. A cylinder becomes a polygon — volume and surface area are therefore slightly below the exact values.",
+  },
+  "step.assembly": {
+    de: "Baugruppe aus {n} Einzelkörpern, zusammengelegt zu einem Modell. Volumen und Gewicht sind die SUMME aller Teile.",
+    en: "Assembly of {n} separate bodies, merged into one model. Volume and weight are the SUM of all parts.",
+  },
+  "error.step-failed": {
+    de: "OpenCascade konnte die STEP-Datei nicht lesen.",
+    en: "OpenCascade could not read the STEP file.",
+  },
+
   "drop.units": { de: "Einheit der Datei", en: "File unit" },
   "drop.unitMm": { de: "Millimeter", en: "Millimetres" },
   "drop.unitInch": { de: "Zoll (× 25,4)", en: "Inches (× 25.4)" },
@@ -66,8 +93,8 @@ const S = {
     en: "The model is too large for the available memory.",
   },
   "error.wrongType": {
-    de: "Das ist keine STL-Datei. Erwartet wird eine Datei mit der Endung .stl.",
-    en: "That is not an STL file. A file ending in .stl is expected.",
+    de: "Dieses Format wird nicht gelesen. Erwartet wird .stl, .step oder .stp.",
+    en: "This format is not supported. Expected .stl, .step or .stp.",
   },
   "error.retry": { de: "Andere Datei wählen", en: "Choose another file" },
 
@@ -439,8 +466,12 @@ const S = {
     en: "This tool uploads nothing. The STL file is read into your browser's memory and displayed there — when you close the tab, it is gone.",
   },
   "privacy.p2": {
-    de: "Das ist keine Zusage, der Sie glauben müssen: Die Seite verbietet sich selbst per Inhaltssicherheitsrichtlinie jede Netzwerkverbindung (connect-src 'none'). Der Browser lässt eine Übertragung technisch nicht zu, auch nicht versehentlich. Prüfbar im Netzwerk-Reiter der Entwicklerwerkzeuge.",
-    en: "This is not a promise you have to take on trust: the page forbids itself any network connection via its content security policy (connect-src 'none'). The browser will not permit a transfer, not even accidentally. Verifiable in the network tab of your developer tools.",
+    de: "Das ist keine Zusage, der Sie glauben müssen: Die Seite lässt per Inhaltssicherheitsrichtlinie nur Anfragen an ihre eigene Herkunft zu (connect-src 'self') — und die liefert Dateien aus, sie nimmt keine entgegen. Nach draußen kann der Browser aus dieser Seite nichts senden, auch nicht versehentlich. Prüfbar im Netzwerk-Reiter der Entwicklerwerkzeuge: Beim Öffnen einer STL passiert dort nichts.",
+    en: "This is not a promise you have to take on trust: the page's content security policy permits requests only to its own origin (connect-src 'self') — and that origin serves files, it accepts none. The browser cannot send anything outward from this page, not even accidentally. Verifiable in the network tab of your developer tools: opening an STL triggers nothing there.",
+  },
+  "privacy.p4": {
+    de: "Nur beim Öffnen einer STEP-Datei wird einmalig die Umwandlungsbibliothek nachgeladen — vom selben Server wie die Seite. Sie rechnet im Browser; Ihre Datei geht auch dabei nirgendwohin.",
+    en: "Only when opening a STEP file is the conversion library fetched once — from the same server as the page. It runs in your browser; your file still goes nowhere.",
   },
   "privacy.p3": {
     de: "Es gibt keine Cookies, keine Zählpixel und keine externen Ressourcen. Schriften, Programmcode und Bildmarke liegen auf demselben Server wie die Seite.",

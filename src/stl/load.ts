@@ -8,7 +8,15 @@
  * Frage, welches der beiden Ergebnisse zuerst zurueckkommt.
  */
 
-import type { MeshStats, StlErrorCode, StlFormat, WorkerRequest, WorkerResponse } from "./types";
+import { DEFAULT_STEP_QUALITY, type StepQuality } from "./step-mesh";
+import type {
+  MeshStats,
+  StepWorkerRequest,
+  StlErrorCode,
+  StlFormat,
+  WorkerRequest,
+  WorkerResponse,
+} from "./types";
 
 export interface LoadedModel {
   /** Eindeutig je Ladevorgang — dient als React-Schluessel. */
@@ -21,8 +29,12 @@ export interface LoadedModel {
   solidName: string | null;
   trailingBytes: number;
   stats: MeshStats;
-  /** Angewandter Skalierungsfaktor (1 = mm, 25.4 = Zoll-Datei). */
+  /** Angewandter Skalierungsfaktor (1 = mm, 25.4 = Zoll-Datei). Bei STEP immer 1. */
   scale: number;
+  /** Nur bei STEP: Zahl der zusammengelegten Einzelkoerper. */
+  parts?: number;
+  /** Nur bei STEP: die verwendete Tessellierungsguete. */
+  quality?: StepQuality;
 }
 
 export interface LoadProgress {
@@ -50,10 +62,19 @@ export interface LoadHandle {
 
 export function loadStl(
   file: File,
-  options: { scale?: number; onProgress?: (p: LoadProgress) => void } = {},
+  options: {
+    scale?: number;
+    quality?: StepQuality;
+    onProgress?: (p: LoadProgress) => void;
+  } = {},
 ): LoadHandle {
   const id = ++sequence;
-  const scale = options.scale ?? 1;
+  const step = isStepFile(file);
+  // Bei STEP gibt es keinen Skalierungsfaktor: Die Einheit steht in der Datei,
+  // OpenCascade rechnet sie auf Millimeter um. Ein zusaetzlicher Faktor waere
+  // eine zweite, widersprechende Angabe.
+  const scale = step ? 1 : (options.scale ?? 1);
+  const quality = options.quality ?? DEFAULT_STEP_QUALITY;
   let worker: Worker | null = null;
   let cancelled = false;
 
@@ -75,7 +96,13 @@ export function loadStl(
         // Vite loest diese Form beim Bauen auf und legt den Worker als eigene
         // Datei neben das Buendel — gleiche Herkunft, deshalb genuegt der
         // Richtlinie worker-src 'self'.
-        worker = new Worker(new URL("./parse.worker.ts", import.meta.url), { type: "module" });
+        //
+        // Zwei getrennte Worker, weil am STEP-Zweig OpenCascade als
+        // WebAssembly haengt: 7,4 MB, die sonst jeder Besucher mitzoege, auch
+        // wer nur STL oeffnet.
+        worker = step
+          ? new Worker(new URL("./step.worker.ts", import.meta.url), { type: "module" })
+          : new Worker(new URL("./parse.worker.ts", import.meta.url), { type: "module" });
 
         worker.onmessage = (event: MessageEvent<WorkerResponse>) => {
           const data = event.data;
@@ -103,6 +130,8 @@ export function loadStl(
             trailingBytes: data.trailingBytes,
             stats: data.stats,
             scale,
+            parts: data.parts,
+            quality: step ? quality : undefined,
           };
           cancel();
           resolve(model);
@@ -119,7 +148,9 @@ export function loadStl(
           );
         };
 
-        const request: WorkerRequest = { id, buffer, scale };
+        const request: WorkerRequest | StepWorkerRequest = step
+          ? { id, buffer, quality }
+          : { id, buffer, scale };
         // Auch der Eingabepuffer wird uebergeben statt kopiert. Danach ist er auf
         // dem Hauptstrang leer — deshalb wird er hier auch nirgends aufgehoben.
         worker.postMessage(request, [buffer]);
@@ -136,5 +167,23 @@ export function loadStl(
 
 /** Dateiendung pruefen, bevor Megabyte gelesen werden. */
 export function looksLikeStlFile(file: File): boolean {
-  return /\.stl$/i.test(file.name);
+  return /\.(stl|step|stp)$/i.test(file.name);
+}
+
+/**
+ * STEP oder IGES-artige Endung?
+ *
+ * .stp ist die verbreitete Kurzform von .step — beide meinen dasselbe Format.
+ * Wer nur auf .step prueft, weist die Haelfte aller Dateien ab, die aus
+ * SolidWorks und Inventor herauskommen.
+ */
+export function isStepFile(file: File): boolean {
+  return /\.(step|stp)$/i.test(file.name);
+}
+
+/** Fuer die Anzeige: welches Format wurde erkannt? */
+export function fileKind(file: File): "stl" | "step" | "unbekannt" {
+  if (isStepFile(file)) return "step";
+  if (/\.stl$/i.test(file.name)) return "stl";
+  return "unbekannt";
 }

@@ -25,9 +25,10 @@ bliebe leer.
 
 ---
 
-> **Nachtrag zu ADR-001:** Für die STEP-Unterstützung wird die Richtlinie
-> gelockert — siehe [ADR-013](#adr-013--step-unterstützung-kostet-die-absolute-form-der-zusage).
-> Beschlossen am 2026-08-03, noch nicht umgesetzt.
+> **Nachtrag zu ADR-001:** Für die STEP-Unterstützung ist die Richtlinie am
+> 2026-08-04 auf `connect-src 'self'` und `script-src 'self' 'wasm-unsafe-eval'`
+> gelockert worden — siehe [ADR-013](#adr-013--step-unterstützung-kostet-die-absolute-form-der-zusage).
+> Der obige Absatz beschreibt damit den Stand bis zu diesem Tag.
 
 ---
 
@@ -205,7 +206,7 @@ Neuzeichnen an.
 
 ## ADR-013 — STEP-Unterstützung kostet die absolute Form der Zusage
 
-**Status:** beschlossen am 2026-08-03, noch nicht umgesetzt.
+**Status:** beschlossen am 2026-08-03, umgesetzt am 2026-08-04.
 
 **Entscheidung.** STEP-Dateien werden über `occt-import-js` (OpenCascade als
 WebAssembly, LGPL-2.1) im Browser tesselliert. Dafür wird die
