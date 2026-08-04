@@ -50,11 +50,12 @@ weitergebaut wird:
 
 - Bei der Auswahl der nächsten Funktionen wurde zusätzlich „Something else"
   angehakt, ohne dass ein Text ankam. Der Wunsch dahinter ist weiterhin unbekannt.
-- Bauräume sind am 2026-08-04 von Riko bestätigt und berichtigt: XXL
-  1.800 × 2.400 × 1.800, XXL Hoch 1.200 × 1.200 × **2.000** (vorher fälschlich
-  2.200), Großformat 800 × 800 × 1.000. **Der falsche 2.200er-Wert steht weiterhin
-  im öffentlichen FDM-Materialberater** (`src/config/site.ts` dort, Eintrag
-  „Hochformat") — dort ebenfalls berichtigen.
+- Bauräume am 2026-08-04 von Riko bestätigt: XXL 1.800 × 2.400 × 1.800,
+  XXL Hoch 1.200 × 1.200 × **2.200**, Großformat 800 × 800 × 1.000.
+  **Die 2.200 sind Absicht:** Der Hersteller gibt 2.000 an, gefahren werden 2.200.
+  Der Grund steht als Kommentar in [`src/config/site.ts`](src/config/site.ts),
+  damit niemand anhand des Datenblatts "berichtigt". Der FDM-Materialberater
+  stimmt damit ebenfalls — dort ist nichts zu tun.
 
 ## Handprüfung vor jeder Veröffentlichung
 

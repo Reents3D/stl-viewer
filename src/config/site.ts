@@ -37,14 +37,26 @@ export const SITE = {
   },
 
   /**
-   * Reale Bauraeume der Anlagen (mm). Dieselben Werte wie im Materialberater —
-   * sie entscheiden hier darueber, ob ein Modell als "passt" oder "zu gross"
-   * ausgewiesen wird. Eine falsche Zahl an dieser Stelle erzeugt eine falsche
-   * Zusage gegenueber dem Kunden, deshalb liegen sie hier und nicht im Viewer.
+   * Reale Bauraeume der Anlagen (mm).
+   *
+   * Sie entscheiden darueber, ob ein Modell dem Kunden als "passt" oder "zu
+   * gross" ausgewiesen wird. Eine falsche Zahl hier erzeugt eine falsche Zusage,
+   * deshalb liegen sie an einer Stelle und nicht verstreut im Viewer.
+   *
+   * ZU DEN 2.200 mm BEI "XXL HOCH" — BITTE NICHT AUF 2.000 "BERICHTIGEN".
+   * Der Hersteller gibt 2.000 mm an. In der Praxis faehrt Reents3D dort 2.200 mm.
+   * Der hoehere Wert steht hier bewusst und auf ausdrueckliche Angabe der
+   * Fertigung (Riko, 2026-08-04). Wer spaeter das Datenblatt danebenlegt, wird
+   * eine Abweichung finden und sie fuer einen Fehler halten — sie ist keiner.
+   *
+   * Wer die Zahl dennoch aendern will, aendert damit eine Zusage an Kunden:
+   * Ein Bauteil zwischen 2.000 und 2.200 mm Hoehe wechselt dadurch von "passt"
+   * auf "zu gross" oder umgekehrt. Das ist eine Entscheidung der Fertigung,
+   * keine der Entwicklung.
    */
   buildVolumes: [
     { id: "xxl", name: "XXL", x: 1800, y: 2400, z: 1800 },
-    { id: "hoch", name: "XXL Hoch", x: 1200, y: 1200, z: 2000 },
+    { id: "hoch", name: "XXL Hoch", x: 1200, y: 1200, z: 2200 },
     { id: "gross", name: "Großformat", x: 800, y: 800, z: 1000 },
     { id: "fdm", name: "FDM-Standard", x: 350, y: 350, z: 400 },
   ],
