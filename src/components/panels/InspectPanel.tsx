@@ -84,15 +84,7 @@ export function InspectPanel({
           )}
           <DataRow
             label={t("stats.format")}
-            value={
-              model.format === "step"
-                ? "STEP"
-                : model.format === "iges"
-                  ? "IGES"
-                  : model.format === "binary"
-                    ? "Binär-STL"
-                    : "ASCII-STL"
-            }
+            value={fmt.formatLabel(model.format)}
           />
           <DataRow label={t("stats.fileSize")} value={fmt.fileSize(model.fileSize, lang)} />
           {model.solidName && <DataRow label={t("stats.modelName")} value={model.solidName} />}
@@ -101,7 +93,7 @@ export function InspectPanel({
         {/* Bei STEP und IGES beziehen sich ALLE Zahlen darueber auf die
             Tessellierung. Der Hinweis steht deshalb direkt darunter und nicht im
             Kleingedruckten. */}
-        {(model.format === "step" || model.format === "iges") && (
+        {fmt.isTessellated(model.format) && (
           <div className="mt-2 space-y-1.5">
             <p className="text-[11px] text-ok leading-snug">
               {t("step.approximation", { q: t(`step.quality${qualityKey(model.quality)}`) })}

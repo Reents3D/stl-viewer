@@ -333,7 +333,33 @@ class Layout {
         `${fmt.num(stats.centroid.x, this.lang, 1)} / ${fmt.num(stats.centroid.y, this.lang, 1)} / ${fmt.num(stats.centroid.z, this.lang, 1)} mm`,
       );
     }
-    this.row(this.t("stats.format"), model.format === "binary" ? "Binär-STL" : "ASCII-STL");
+    this.row(this.t("stats.format"), fmt.formatLabel(model.format));
+
+    // Die Vorbehalte zu STEP und IGES gehoeren INS DOKUMENT, nicht nur in die
+    // Oberflaeche. Das PDF ist das Blatt, das in die Projektakte wandert und
+    // spaeter ohne das Werkzeug gelesen wird — dort muss stehen, worauf sich
+    // Volumen und Befund beziehen.
+    if (fmt.isTessellated(model.format)) {
+      this.paragraph(
+        this.t("step.approximation", {
+          q: this.t(
+            model.quality === "grob"
+              ? "step.qualityCoarse"
+              : model.quality === "fein"
+                ? "step.qualityFine"
+                : "step.qualityMedium",
+          ),
+        }),
+        7.5,
+        PETROL,
+      );
+      if ((model.parts ?? 1) > 1) {
+        this.paragraph(this.t("step.assembly", { n: model.parts ?? 1 }), 7.5, PETROL);
+      }
+      if (model.format === "iges" && model.stats.topology?.watertight === false) {
+        this.paragraph(this.t("iges.openSurfaces"), 7.5, PETROL);
+      }
+    }
     this.row(this.t("stats.fileSize"), fmt.fileSize(model.fileSize, this.lang));
     if (model.scale !== 1) {
       this.row(this.t("drop.units"), `× ${fmt.num(model.scale, this.lang, 2)}`);

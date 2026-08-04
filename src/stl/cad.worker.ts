@@ -20,7 +20,7 @@ import occtimportjs, { type OcctModule } from "occt-import-js";
 import wasmUrl from "occt-import-js/dist/occt-import-js.wasm?url";
 
 import { analyseMesh } from "./geometry";
-import { convertOcctResult, occtReadParams, OcctConversionError } from "./occt";
+import { convertOcctResult, occtReadParams } from "./occt";
 import type { CadWorkerRequest, WorkerResponse } from "./types";
 
 const ctx = self as unknown as DedicatedWorkerGlobalScope;
@@ -93,7 +93,10 @@ ctx.onmessage = (event: MessageEvent<CadWorkerRequest>) => {
         id,
         kind: "error",
         message,
-        code: error instanceof OcctConversionError ? "not-stl" : "step-failed",
+        // Beides ist derselbe Befund fuer den Kunden: OpenCascade kam mit der
+        // Datei nicht zurecht. Frueher stand hier not-stl — und der Kunde las
+        // unter seiner STEP-Datei "Der Inhalt sieht nicht nach einem STL aus".
+        code: "cad-failed",
       });
     }
   })();

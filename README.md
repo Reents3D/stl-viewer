@@ -1,10 +1,11 @@
-# STL-Betrachter
+# STL-, STEP- und IGES-Betrachter
 
 **3D-Modelle zeigen, besprechen und dokumentieren — direkt im Browser, ohne Upload.**
 
 ### → [Werkzeug öffnen: reents3d.github.io/stl-viewer](https://reents3d.github.io/stl-viewer/)
 
-Kostenlos, ohne Konto, ohne Installation.
+Gelesen werden **STL** (binär und ASCII), **STEP** (`.step`, `.stp`) und **IGES**
+(`.iges`, `.igs`). Kostenlos, ohne Konto, ohne Installation.
 
 ---
 
@@ -207,7 +208,7 @@ mehrere Sekunden ein. Hier laufen Parser und Analyse gemeinsam in einem Web Work
 spart außerdem eine vollständige Kopie des Positionsfeldes.
 
 **Die Z-Achse zeigt nach oben**, nicht die Y-Achse wie in der Voreinstellung von three.js.
-STL kommt aus CAD und aus Slicern, dort ist Z die Bauhöhe. So heißt die Höhe in der Datei,
+Alle drei Formate kommen aus CAD und aus Slicern, dort ist Z die Bauhöhe. So heißt die Höhe in der Datei,
 in der Anzeige und im PDF gleich.
 
 **Im eigenen Quelltext gibt es kein `fetch`, und es darf keines geben.** Die einzige
@@ -223,7 +224,8 @@ entstehen im Speicher, nicht als Dateien im Repo — ein Würfel bekannter Kante
 als Code nachvollziehbar, eine Binärdatei im Verzeichnis behauptet nur, ein Würfel zu
 sein.
 
-**Kundendateien gehören nie ins Repository.** `.gitignore` sperrt `*.stl`.
+**Kundendateien gehören nie ins Repository.** `.gitignore` sperrt `*.stl`, `*.step`,
+`*.stp`, `*.iges` und `*.igs`.
 
 Der Viewer selbst wird von Hand geprüft; die Liste steht in
 [CONTRIBUTING.md](CONTRIBUTING.md).

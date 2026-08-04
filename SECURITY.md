@@ -6,8 +6,8 @@ Dieses Werkzeug ist eine statische Seite ohne Server, ohne Konto und ohne Datenh
 Es gibt kein Backend, das angegriffen werden könnte, und keine gespeicherten Daten, die
 abfließen könnten.
 
-Was es gibt, ist **fremde Eingabe**: eine STL-Datei, die der Besucher öffnet. Sie wird
-als unvertrauenswürdig behandelt.
+Was es gibt, ist **fremde Eingabe**: die Datei, die der Besucher öffnet — STL, STEP oder
+IGES. Sie wird als unvertrauenswürdig behandelt.
 
 ## Getroffene Maßnahmen
 
@@ -47,7 +47,13 @@ die IP eines Besuchers.
 sie nicht weiter geöffnet wurde als beschlossen (`scripts/check-artifact.mjs`). Eine
 Lockerung auf `connect-src *` oder `'unsafe-eval'` lässt den Bau fehlschlagen.
 
-**Parser gegen fehlerhafte Eingaben gehärtet.** Abgeschnittene Dateien werden so weit
+**STEP und IGES laufen durch fremden Code — im Worker und ohne Ausgang.** Das Lesen
+übernimmt OpenCascade als WebAssembly (`occt-import-js`). Es läuft in einem eigenen
+Worker, hat keinen Zugriff auf das Dokument und kann wegen `connect-src 'self'` nichts
+verschicken. Die Bibliothek liegt versioniert im Repo, wird nicht von einem CDN geholt
+und ist in [THIRD-PARTY.md](THIRD-PARTY.md) samt Lizenz (LGPL-2.1) ausgewiesen.
+
+**Die STL-Parser sind gegen fehlerhafte Eingaben gehärtet.** Abgeschnittene Dateien werden so weit
 gelesen, wie sie reichen, statt eine Ausnahme zu werfen. Dreieckszahlen aus dem Dateikopf
 werden gegen die tatsächliche Dateilänge geprüft, bevor Speicher angefordert wird — eine
 Datei, die 4 Mrd. Dreiecke behauptet, führt nicht zu einer Speicheranforderung über
@@ -63,7 +69,7 @@ vorhanden.
 
 ## Was bewusst nicht abgesichert ist
 
-Ein bösartiges STL kann den Reiter zum Absturz bringen, indem es sehr viel Speicher
+Eine bösartige Datei kann den Reiter zum Absturz bringen, indem sie sehr viel Speicher
 anfordert. Das ist ein Verlust der Sitzung, kein Datenabfluss — und es trifft nur den
 Besucher selbst, der die Datei geöffnet hat.
 

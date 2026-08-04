@@ -14,9 +14,11 @@ type Entry = { de: string; en: string };
 
 const S = {
   "app.name": { de: "STL-Betrachter", en: "STL Viewer" },
+  /* Der Name bleibt kurz — er steht in einer Kopfzeile, die abschneidet. Welche
+     Formate gelesen werden, sagt die Zeile direkt darunter. */
   "app.tagline": {
-    de: "Modell prüfen, kommentieren, dokumentieren",
-    en: "Inspect, annotate and document your model",
+    de: "STL, STEP und IGES prüfen, kommentieren, dokumentieren",
+    en: "Inspect, annotate and document STL, STEP and IGES",
   },
   "cta.request": { de: "Projekt anfragen", en: "Request a project" },
   "cta.advisor": { de: "Materialberater", en: "Material advisor" },
@@ -59,7 +61,7 @@ const S = {
     de: "IGES speichert häufig einzelne Flächen statt eines geschlossenen Körpers. Ein Befund „Netz hat Löcher“ hat dann seine Ursache im Format, nicht in Ihrer Konstruktion — Volumen und Gewicht sind hier trotzdem nicht belastbar.",
     en: "IGES often stores loose surfaces rather than a closed solid. A finding of “mesh has holes” then comes from the format, not from your design — volume and weight are still not meaningful here.",
   },
-  "error.step-failed": {
+  "error.cad-failed": {
     de: "OpenCascade konnte die Datei nicht lesen.",
     en: "OpenCascade could not read the file.",
   },

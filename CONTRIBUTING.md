@@ -54,8 +54,8 @@ Prüfkörper entstehen im Speicher (`tests/fixtures.ts`), nicht als Dateien im R
 Würfel bekannter Kantenlänge ist als Code nachvollziehbar; eine Binärdatei im Verzeichnis
 behauptet nur, ein Würfel zu sein.
 
-**Kundendaten gehören nie ins Repo.** `.gitignore` sperrt `*.stl` außerhalb von
-`tests/fixtures/`. Wer eine Kundendatei zur Fehlersuche braucht, legt sie außerhalb des
+**Kundendaten gehören nie ins Repo.** `.gitignore` sperrt `*.stl`, `*.step`, `*.stp`,
+`*.iges` und `*.igs` außerhalb von `tests/fixtures/`. Wer eine Kundendatei zur Fehlersuche braucht, legt sie außerhalb des
 Arbeitsverzeichnisses ab.
 
 Der Viewer selbst wird von Hand geprüft — die Liste steht im

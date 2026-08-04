@@ -12,4 +12,6 @@ coverage/
 *.stl
 *.step
 *.stp
+*.iges
+*.igs
 !tests/fixtures/*.stl

@@ -1,5 +1,5 @@
 name: Datei öffnet nicht oder wird falsch dargestellt
-description: Eine STL-Datei lässt sich nicht laden, sieht falsch aus oder liefert falsche Kennwerte.
+description: Eine STL-, STEP- oder IGES-Datei lässt sich nicht laden, sieht falsch aus oder liefert falsche Kennwerte.
 labels: ["fehler"]
 body:
   - type: markdown
@@ -23,12 +23,12 @@ body:
     id: herkunft
     attributes:
       label: Womit wurde die Datei erzeugt?
-      placeholder: SolidWorks 2025, Export als binäres STL
+      placeholder: SolidWorks 2025, Export als binäres STL (oder STEP AP214, IGES 5.3)
   - type: input
     id: groesse
     attributes:
       label: Dateigröße und ungefähre Dreieckszahl
-      placeholder: 240 MB, rund 5 Mio. Dreiecke
+      placeholder: 240 MB, rund 5 Mio. Dreiecke — bei STEP/IGES zusätzlich die gewählte Tessellierung
   - type: input
     id: browser
     attributes:

@@ -2,11 +2,30 @@
 
 ## Was die Werte beschreiben
 
-Alle angezeigten und exportierten Werte werden aus der übergebenen STL-Datei berechnet.
-Sie beschreiben die **Geometrie dieser Datei** — nicht ein gefertigtes Bauteil.
+Alle angezeigten und exportierten Werte werden aus der geöffneten Datei berechnet — STL,
+STEP oder IGES. Sie beschreiben die **Geometrie dieser Datei** — nicht ein gefertigtes
+Bauteil.
 
 Zwischen beiden liegen Schwindung, Bauraumtoleranz, Orientierung, Schichtstärke,
-Nachbearbeitung und Werkstoffverhalten. Keine dieser Größen ist in einem STL enthalten.
+Nachbearbeitung und Werkstoffverhalten. Keine dieser Größen steht in einer dieser Dateien.
+
+## STEP und IGES: gerechnet wird die Tessellierung
+
+STL enthält bereits Dreiecke. STEP und IGES beschreiben Flächen dagegen **exakt** — als
+Zylinder, Kegel, Freiformfläche. Zum Anzeigen und Rechnen wird daraus im Browser ein
+Dreiecksnetz erzeugt (Tessellierung, einstellbar grob/mittel/fein).
+
+Alle Kennwerte beziehen sich damit auf dieses Netz, nicht auf die exakte Fläche. Ein
+Zylinder wird zum Vieleck: **Volumen und Oberfläche liegen geringfügig unter den exakten
+Werten**, mit gröberer Einstellung stärker. Für Maße und Bauraumprüfung ist das
+bedeutungslos, für eine Volumen- oder Gewichtsangabe an der dritten Stelle nicht.
+
+IGES speichert häufig einzelne Flächen statt eines geschlossenen Körpers. Der Befund
+meldet dann „Netz hat Löcher" — das ist eine Eigenschaft des Formats und kein Fehler der
+Konstruktion. Volumen und Gewicht sind in diesem Fall trotzdem nicht belastbar.
+
+Eine Baugruppe aus mehreren Körpern wird zu einem Modell zusammengelegt. Volumen und
+Gewicht sind dann die **Summe aller Teile**; die Zahl der Einzelkörper wird ausgewiesen.
 
 ## Gewicht
 
@@ -50,8 +69,12 @@ Reents Technologies GmbH.
 ## Datenverarbeitung
 
 Die geöffnete Datei wird ausschließlich im Arbeitsspeicher des Browsers verarbeitet und
-nicht übertragen. Die ausgelieferte Seite unterbindet ausgehende Netzwerkverbindungen
-über ihre Inhaltssicherheitsrichtlinie (`connect-src 'none'`).
+nicht übertragen. Die Inhaltssicherheitsrichtlinie der ausgelieferten Seite lässt
+ausgehende Verbindungen nur zur eigenen Herkunft zu (`connect-src 'self'`) — also zu dem
+statischen Dateiserver, der die Seite ausliefert und nichts entgegennimmt. Die einzige
+Anfrage, die dabei überhaupt entsteht, holt beim Öffnen einer STEP- oder IGES-Datei das
+Leseprogramm (OpenCascade als WebAssembly) von demselben Server nach. Die Begründung
+steht in [ADR-013](DECISIONS.md).
 
 Unberührt davon bleiben die Zugriffsprotokolle des Servers, der die Seite ausliefert
 (bei GitHub Pages: GitHub). Diese erfassen den Abruf der Seite, nicht die geöffnete Datei.

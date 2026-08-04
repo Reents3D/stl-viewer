@@ -73,6 +73,32 @@ export function fileSize(bytes: number, lang: Lang): string {
   return `${num(bytes / (1024 * 1024), lang, 1)} MB`;
 }
 
+/**
+ * Formatname fuer die Anzeige.
+ *
+ * An EINER Stelle, weil es zwei gab: Die Seitenleiste kannte alle vier Faelle,
+ * das PDF nur zwei — dort stand unter jedem STEP- und IGES-Modell "ASCII-STL".
+ * In einem Dokument, das zum Kunden geht, ist das keine Kleinigkeit: Es
+ * behauptet ein anderes Ausgangsformat, als der Kunde geschickt hat.
+ */
+export function formatLabel(format: "binary" | "ascii" | "step" | "iges"): string {
+  switch (format) {
+    case "step":
+      return "STEP";
+    case "iges":
+      return "IGES";
+    case "binary":
+      return "Binär-STL";
+    default:
+      return "ASCII-STL";
+  }
+}
+
+/** Braucht dieses Format den Hinweis auf die Tessellierung? */
+export function isTessellated(format: string): boolean {
+  return format === "step" || format === "iges";
+}
+
 /** Datum fuer Dateinamen und PDF-Kopf: ISO, weil es sich sortieren laesst. */
 export function isoDate(date: Date): string {
   return date.toISOString().slice(0, 10);

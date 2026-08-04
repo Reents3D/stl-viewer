@@ -1,7 +1,7 @@
 {
-  "name": "STL-Betrachter — Reents3D",
+  "name": "STL-, STEP- und IGES-Betrachter — Reents3D",
   "short_name": "STL-Betrachter",
-  "description": "STL-Datei im Browser ansehen, vermessen, kommentieren und als PDF dokumentieren. Ohne Upload.",
+  "description": "STL, STEP und IGES im Browser ansehen, vermessen, kommentieren und als PDF dokumentieren. Ohne Upload.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

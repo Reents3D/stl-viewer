@@ -10,7 +10,8 @@ Diese Datei ist der Arbeitsstand, nicht die Doku — was das Werkzeug kann, steh
 
 ## Fertig und im Einsatz
 
-- STL öffnen per Ziehen und Ablegen, binär und ASCII, Auswertung im Web Worker
+- Datei öffnen per Ziehen und Ablegen — STL (binär und ASCII), STEP und IGES;
+  Auswertung im Web Worker
 - Kennwerte, topologischer Befund, Gewichtsspanne, Bauraumprüfung
 - Viewer: vier Darstellungsmodi, Schnittebene, Messen, sieben Normalansichten
 - Anmerkungen mit Markierungspin, Kategorie und gespeichertem Blickwinkel
@@ -26,14 +27,14 @@ Diese Datei ist der Arbeitsstand, nicht die Doku — was das Werkzeug kann, steh
   sie nur auf dem Deckblatt, nicht in den technischen Ansichten.
 - **Wandstärke per Klick** — Strahl senkrecht durch die Wand, Wert am Modell und
   in der Liste, unter 1,5 mm rot. Sieben Tests in `tests/lib/thickness.test.ts`.
-- **Versionsvergleich**: zweite STL durchscheinend darüber, Volumen- und
+- **Versionsvergleich**: zweite Datei durchscheinend darüber, Volumen- und
   Maßdifferenz mit Vorzeichen. Ausrichtung über den gemeinsamen CAD-Nullpunkt.
 - **STEP- und IGES-Import** (.step/.stp/.iges/.igs) über OpenCascade als
   WebAssembly, nur bei Bedarf nachgeladen. Einheit kommt aus der Datei,
   Tessellierungsgüte einstellbar, Baugruppen werden zusammengelegt und als solche
   ausgewiesen. Bei IGES weist die Oberfläche zusätzlich darauf hin, dass lose
   Flächen formatbedingt sind und nicht auf einen Konstruktionsfehler deuten.
-- 84 Tests, CI und Pages-Auslieferung grün
+- 91 Tests, CI und Pages-Auslieferung grün
 
 ## Offen
 

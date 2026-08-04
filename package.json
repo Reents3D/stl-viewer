@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "STL-Betrachter fuer den Browser: Datei hineinziehen, Modell pruefen, Anmerkungen setzen, Dokumentation als PDF erzeugen. Die Datei verlaesst den Rechner nicht.",
+  "description": "Betrachter fuer STL, STEP und IGES im Browser: Datei hineinziehen, Modell pruefen, Anmerkungen setzen, Dokumentation als PDF erzeugen. Die Datei verlaesst den Rechner nicht.",
   "license": "MIT",
   "homepage": "https://reents3d.github.io/stl-viewer/",
   "repository": {

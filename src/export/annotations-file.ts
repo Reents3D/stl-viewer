@@ -6,14 +6,23 @@
  * wofuer dieses Werkzeug gebaut ist: Der Kunde soll eine Datei weitergeben
  * koennen, ohne sein Bauteil mitzugeben.
  *
- * Der Preis dafuer steht in der Oberflaeche: Ohne die zugehoerige STL sind die
- * Anmerkungen wertlos. Deshalb merkt sich die Datei Namen und Dreieckszahl des
- * Modells und warnt, wenn beides nicht passt.
+ * Der Preis dafuer steht in der Oberflaeche: Ohne die zugehoerige Modelldatei
+ * (STL, STEP oder IGES) sind die Anmerkungen wertlos. Deshalb merkt sich die Datei
+ * Namen und Dreieckszahl des Modells und warnt, wenn beides nicht passt.
+ *
+ * Bei STEP und IGES haengt die Dreieckszahl an der gewaehlten Tessellierung: Wer
+ * dieselbe Datei spaeter feiner oeffnet, bekommt die Warnung zu Recht.
  */
 
 import type { Annotation, AnnotationCategory } from "../viewer/types";
 import { ANNOTATION_CATEGORIES } from "../viewer/types";
 
+/**
+ * Die Kennung behaelt "stl" im Namen, obwohl auch STEP und IGES gelesen werden.
+ * Sie steht in JEDER bereits gespeicherten Anmerkungsdatei. Wer sie umbenennt,
+ * macht die Dateien unlesbar, die Kunden schon abgelegt haben — der Gewinn waere
+ * ein huebscherer String, der Preis fremde Arbeit.
+ */
 export const ANNOTATION_FILE_FORMAT = "reents3d-stl-annotations";
 export const ANNOTATION_FILE_VERSION = 1;
 

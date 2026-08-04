@@ -97,7 +97,7 @@ export default function App() {
       const file = files.find(isSupportedFile) ?? files[0];
       if (!file) return;
       if (!isSupportedFile(file)) {
-        setError({ code: "not-stl", message: t("error.wrongType") });
+        setError({ code: "unsupported", message: "" });
         return;
       }
 
@@ -356,7 +356,7 @@ export default function App() {
       triangles: model.triangles,
     });
     if (!result.ok) {
-      setError({ code: "not-stl", message: t("error.wrongType") });
+      setError({ code: "unsupported", message: "" });
       return;
     }
     if (
@@ -624,7 +624,8 @@ function errorDetail(t: ReturnType<typeof makeT>, error: { code: StlErrorCode; m
     "no-triangles": t("error.no-triangles"),
     truncated: t("error.truncated"),
     "out-of-memory": t("error.out-of-memory"),
-    "step-failed": t("error.step-failed"),
+    "cad-failed": t("error.cad-failed"),
+    unsupported: t("error.wrongType"),
   }[error.code];
   // Die Meldung aus dem Parser steht DAHINTER, nicht anstelle: Sie nennt den
   // technischen Grund, den ein Konstrukteur braucht, um die Datei neu zu

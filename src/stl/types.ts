@@ -120,4 +120,6 @@ export type StlErrorCode =
   | "no-triangles"
   | "truncated"
   | "out-of-memory"
-  | "step-failed";
+  | "cad-failed"
+  /** Endung gehoert zu keinem der gelesenen Formate. */
+  | "unsupported";
