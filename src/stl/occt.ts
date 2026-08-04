@@ -25,14 +25,14 @@ export interface OcctResult {
   root?: { name?: string };
 }
 
-export class StepConversionError extends Error {
+export class OcctConversionError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = "StepConversionError";
+    this.name = "OcctConversionError";
   }
 }
 
-export interface ConvertedStep {
+export interface ConvertedCad {
   positions: Float32Array;
   triangles: number;
   /** Zahl der Einzelkoerper. Groesser als eins heisst: Es ist eine Baugruppe. */
@@ -53,27 +53,27 @@ export interface ConvertedStep {
  * Baugruppe ist das Volumen die SUMME der Teile, und wer das nicht weiss, haelt
  * es fuer das Volumen eines Bauteils.
  */
-export function convertOcctResult(result: OcctResult): ConvertedStep {
+export function convertOcctResult(result: OcctResult): ConvertedCad {
   if (!result.success) {
-    throw new StepConversionError("OpenCascade konnte die Datei nicht lesen.");
+    throw new OcctConversionError("OpenCascade konnte die Datei nicht lesen.");
   }
   const meshes = result.meshes ?? [];
   if (meshes.length === 0) {
-    throw new StepConversionError("Die Datei enthaelt keine Flaechen.");
+    throw new OcctConversionError("Die Datei enthaelt keine Flaechen.");
   }
 
   let triangles = 0;
   for (const mesh of meshes) {
     const indexCount = mesh.index?.array?.length ?? 0;
     if (indexCount % 3 !== 0) {
-      throw new StepConversionError(
+      throw new OcctConversionError(
         `Ein Koerper hat ${indexCount} Indizes — nicht durch drei teilbar.`,
       );
     }
     triangles += indexCount / 3;
   }
   if (triangles === 0) {
-    throw new StepConversionError("Die Tessellierung ergab kein einziges Dreieck.");
+    throw new OcctConversionError("Die Tessellierung ergab kein einziges Dreieck.");
   }
 
   const positions = new Float32Array(triangles * 9);
@@ -90,7 +90,7 @@ export function convertOcctResult(result: OcctResult): ConvertedStep {
       // und das Bauteil bis in den Ursprung ziehen — sichtbar als riesiger
       // Splitter, dessen Ursache niemand findet.
       if (v < 0 || v >= vertexCount) {
-        throw new StepConversionError(`Ungueltiger Eckpunktverweis ${v} in einem Koerper.`);
+        throw new OcctConversionError(`Ungueltiger Eckpunktverweis ${v} in einem Koerper.`);
       }
       positions[out++] = source[v * 3];
       positions[out++] = source[v * 3 + 1];
@@ -125,16 +125,29 @@ function pickName(result: OcctResult): string | null {
  *
  * Die Winkelabweichung steht in Bogenmass.
  */
-export const STEP_QUALITY = {
+export const TESSELLATION_QUALITY = {
   grob: { linearDeflection: 0.005, angularDeflection: 0.8 },
   mittel: { linearDeflection: 0.001, angularDeflection: 0.5 },
   fein: { linearDeflection: 0.0002, angularDeflection: 0.25 },
 } as const;
 
-export type StepQuality = keyof typeof STEP_QUALITY;
-export const DEFAULT_STEP_QUALITY: StepQuality = "mittel";
+export type TessellationQuality = keyof typeof TESSELLATION_QUALITY;
+export const DEFAULT_TESSELLATION_QUALITY: TessellationQuality = "mittel";
 
-export function stepReadParams(quality: StepQuality): {
+/**
+ * Formate, die ueber OpenCascade laufen.
+ *
+ * Beide liefern dasselbe Ergebnis — deshalb steht ab convertOcctResult kein
+ * Unterschied mehr im Code. Er bleibt nur dort, wo er etwas bedeutet: bei der
+ * aufzurufenden Funktion und in dem, was die Oberflaeche dazu sagt.
+ */
+export type CadFormat = "step" | "iges";
+
+export function isCadFormat(value: string): value is CadFormat {
+  return value === "step" || value === "iges";
+}
+
+export function occtReadParams(quality: TessellationQuality): {
   linearUnit: "millimeter";
   linearDeflectionType: "bounding_box_ratio";
   linearDeflection: number;
@@ -147,6 +160,6 @@ export function stepReadParams(quality: StepQuality): {
     // Quelltext, dass das kein Versehen ist.
     linearUnit: "millimeter",
     linearDeflectionType: "bounding_box_ratio",
-    ...STEP_QUALITY[quality],
+    ...TESSELLATION_QUALITY[quality],
   };
 }

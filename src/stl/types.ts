@@ -1,6 +1,6 @@
 /** Gemeinsame Typen fuer Parser, Analyse und Worker-Protokoll. */
 
-import type { StepQuality } from "./step-mesh";
+import type { CadFormat, TessellationQuality } from "./occt";
 
 /**
  * "step" steht bewusst neben den beiden STL-Formen.
@@ -10,7 +10,7 @@ import type { StepQuality } from "./step-mesh";
  * Annaeherung, deren Feinheit eingestellt wird. Die Unterscheidung wandert
  * deshalb bis in die Oberflaeche und ins PDF durch, statt hier zu enden.
  */
-export type StlFormat = "binary" | "ascii" | "step";
+export type StlFormat = "binary" | "ascii" | "step" | "iges";
 
 export interface ParsedStl {
   /** 9 Werte je Dreieck (3 Eckpunkte x/y/z), nicht indiziert. */
@@ -85,14 +85,16 @@ export interface WorkerRequest {
   scale: number;
 }
 
-export interface StepWorkerRequest {
+export interface CadWorkerRequest {
   id: number;
   buffer: ArrayBuffer;
+  /** Welche Lesefunktion von OpenCascade zustaendig ist. */
+  format: CadFormat;
   /**
    * Feinheit der Tessellierung. KEIN Skalierungsfaktor — ein STEP traegt seine
    * Einheit in der Datei, OpenCascade rechnet sie auf Millimeter um.
    */
-  quality: StepQuality;
+  quality: TessellationQuality;
 }
 
 export type WorkerResponse =
@@ -105,7 +107,7 @@ export type WorkerResponse =
       format: StlFormat;
       solidName: string | null;
       trailingBytes: number;
-      /** Nur bei STEP: Zahl der zusammengelegten Einzelkoerper. */
+      /** Nur bei STEP/IGES: Zahl der zusammengelegten Einzelkoerper. */
       parts?: number;
       stats: MeshStats;
     }

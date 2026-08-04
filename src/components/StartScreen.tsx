@@ -8,7 +8,7 @@
  */
 
 import type { Lang, T } from "../i18n";
-import type { StepQuality } from "../stl/step-mesh";
+import type { TessellationQuality } from "../stl/occt";
 import { SITE } from "../config/site";
 import { Footer } from "./Chrome";
 import { Button, Card, Disclosure, Icon, ICONS } from "./ui";
@@ -31,8 +31,8 @@ export function StartScreen({
   lang: Lang;
   unit: UnitChoice;
   onUnit: (unit: UnitChoice) => void;
-  quality: StepQuality;
-  onQuality: (quality: StepQuality) => void;
+  quality: TessellationQuality;
+  onQuality: (quality: TessellationQuality) => void;
   onPick: () => void;
   error: { title: string; detail: string } | null;
 }) {
@@ -64,7 +64,7 @@ export function StartScreen({
           </span>
           <span className="block font-display font-bold text-lg mb-1">{t("drop.title")}</span>
           <span className="block text-sm muted mb-5">{t("drop.button")}</span>
-          <span className="inline-block text-xs muted">STL · STEP · STP</span>
+          <span className="inline-block text-xs muted">STL · STEP · IGES</span>
         </button>
 
         <div className="mt-5 grid gap-4 sm:grid-cols-2">

@@ -1,7 +1,7 @@
 /// <reference lib="webworker" />
 
 /**
- * STEP-Import in einem eigenen Strang.
+ * STEP- und IGES-Import in einem eigenen Strang.
  *
  * WARUM EIN ZWEITER WORKER UND NICHT DER VORHANDENE
  * Hier haengt OpenCascade als WebAssembly dran — 7,4 MB. Laege der Import im
@@ -20,8 +20,8 @@ import occtimportjs, { type OcctModule } from "occt-import-js";
 import wasmUrl from "occt-import-js/dist/occt-import-js.wasm?url";
 
 import { analyseMesh } from "./geometry";
-import { convertOcctResult, stepReadParams, StepConversionError } from "./step-mesh";
-import type { StepWorkerRequest, WorkerResponse } from "./types";
+import { convertOcctResult, occtReadParams, OcctConversionError } from "./occt";
+import type { CadWorkerRequest, WorkerResponse } from "./types";
 
 const ctx = self as unknown as DedicatedWorkerGlobalScope;
 
@@ -42,8 +42,8 @@ function loadOcct(): Promise<OcctModule> {
   return occtPromise;
 }
 
-ctx.onmessage = (event: MessageEvent<StepWorkerRequest>) => {
-  const { id, buffer, quality } = event.data;
+ctx.onmessage = (event: MessageEvent<CadWorkerRequest>) => {
+  const { id, buffer, quality, format } = event.data;
 
   const post = (message: WorkerResponse, transfer?: Transferable[]): void => {
     ctx.postMessage(message, transfer ?? []);
@@ -58,7 +58,13 @@ ctx.onmessage = (event: MessageEvent<StepWorkerRequest>) => {
       const occt = await loadOcct();
 
       post({ id, kind: "progress", phase: "parse", ratio: 0.2 });
-      const result = occt.ReadStepFile(new Uint8Array(buffer), stepReadParams(quality));
+      const bytes = new Uint8Array(buffer);
+      const params = occtReadParams(quality);
+      // Derselbe Ergebnisaufbau, dieselbe Umwandlung — nur die Lesefunktion
+      // unterscheidet sich. Ab hier weiss der Rest des Werkzeugs nichts mehr
+      // davon, aus welchem der beiden Formate das Netz gekommen ist.
+      const result =
+        format === "iges" ? occt.ReadIgesFile(bytes, params) : occt.ReadStepFile(bytes, params);
 
       post({ id, kind: "progress", phase: "parse", ratio: 0.85 });
       const converted = convertOcctResult(result);
@@ -73,7 +79,7 @@ ctx.onmessage = (event: MessageEvent<StepWorkerRequest>) => {
           kind: "done",
           positions: converted.positions.buffer as ArrayBuffer,
           triangles: converted.triangles,
-          format: "step",
+          format,
           solidName: converted.name,
           trailingBytes: 0,
           parts: converted.parts,
@@ -87,7 +93,7 @@ ctx.onmessage = (event: MessageEvent<StepWorkerRequest>) => {
         id,
         kind: "error",
         message,
-        code: error instanceof StepConversionError ? "not-stl" : "step-failed",
+        code: error instanceof OcctConversionError ? "not-stl" : "step-failed",
       });
     }
   })();

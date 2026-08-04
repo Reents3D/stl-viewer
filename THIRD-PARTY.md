@@ -5,7 +5,7 @@ Mitausgeliefert werden die folgenden Bestandteile Dritter.
 
 ## occt-import-js — LGPL-2.1
 
-Wird **nur beim Öffnen einer STEP-Datei** nachgeladen und rechnet dann im Browser
+Wird **nur beim Öffnen einer STEP- oder IGES-Datei** nachgeladen und rechnet dann im Browser
 des Besuchers.
 
 | | |

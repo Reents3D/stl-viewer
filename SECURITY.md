@@ -27,7 +27,7 @@ worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'
 
 `style-src` braucht `'unsafe-inline'`, weil React Stilattribute direkt am Element setzt
 (Fortschrittsbalken, Markenpositionen). `script-src` braucht `'wasm-unsafe-eval'` für den
-STEP-Import — diese Freigabe erlaubt das Übersetzen von WebAssembly, aber weiterhin kein
+STEP- und IGES-Import — diese Freigabe erlaubt das Übersetzen von WebAssembly, aber weiterhin kein
 `eval()` und kein Inline-Skript. `frame-ancestors` fehlt bewusst: Die Richtung wirkt laut
 Spezifikation nur als echte HTTP-Kopfzeile und ist im Meta-Tag wirkungslos; GitHub Pages
 lässt keine eigenen Kopfzeilen zu. Klickjacking-Schutz gibt es erst nach einem Umzug auf
@@ -40,7 +40,7 @@ eine eigene Domain mit vorgelagertem CDN.
 > Auswertungsstrang, von derselben Herkunft.
 
 **Keine externen Ressourcen.** Schriften, Programmcode, Bildmarke und die
-WebAssembly des STEP-Imports liegen auf demselben Server wie die Seite. Kein CDN sieht
+WebAssembly des STEP- und IGES-Imports liegen auf demselben Server wie die Seite. Kein CDN sieht
 die IP eines Besuchers.
 
 **Die Pipeline prüft die Richtlinie am Artefakt** — auf Vorhandensein *und* darauf, dass

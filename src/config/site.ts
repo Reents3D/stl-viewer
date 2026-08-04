@@ -43,8 +43,8 @@ export const SITE = {
    * Zusage gegenueber dem Kunden, deshalb liegen sie hier und nicht im Viewer.
    */
   buildVolumes: [
-    { id: "xxl", name: "XXL-Anlage", x: 1800, y: 2400, z: 1800 },
-    { id: "hoch", name: "Hochformat", x: 1200, y: 1200, z: 2200 },
+    { id: "xxl", name: "XXL", x: 1800, y: 2400, z: 1800 },
+    { id: "hoch", name: "XXL Hoch", x: 1200, y: 1200, z: 2000 },
     { id: "gross", name: "Großformat", x: 800, y: 800, z: 1000 },
     { id: "fdm", name: "FDM-Standard", x: 350, y: 350, z: 400 },
   ],

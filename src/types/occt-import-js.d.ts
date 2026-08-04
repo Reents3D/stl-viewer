@@ -3,12 +3,12 @@
  *
  * Das Paket liefert keine mit — es ist eine Emscripten-Ausgabe von OpenCascade
  * und kennt TypeScript nicht. Beschrieben ist hier nur, was dieses Projekt
- * benutzt; die uebrigen Funktionen (ReadBrepFile, ReadIgesFile) bleiben
- * absichtlich aussen vor, damit die Datei nicht mehr verspricht, als geprueft ist.
+ * benutzt; ReadBrepFile bleibt absichtlich aussen vor, damit die Datei nicht mehr
+ * verspricht, als geprueft ist.
  */
 
 declare module "occt-import-js" {
-  import type { OcctResult } from "../stl/step-mesh";
+  import type { OcctResult } from "../stl/occt";
 
   export interface OcctReadParams {
     linearUnit?: "millimeter" | "centimeter" | "meter" | "inch" | "foot";
@@ -19,6 +19,7 @@ declare module "occt-import-js" {
 
   export interface OcctModule {
     ReadStepFile(content: Uint8Array, params: OcctReadParams | null): OcctResult;
+    ReadIgesFile(content: Uint8Array, params: OcctReadParams | null): OcctResult;
   }
 
   export interface OcctFactoryOptions {

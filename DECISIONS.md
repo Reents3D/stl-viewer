@@ -206,7 +206,9 @@ Neuzeichnen an.
 
 ## ADR-013 — STEP-Unterstützung kostet die absolute Form der Zusage
 
-**Status:** beschlossen am 2026-08-03, umgesetzt am 2026-08-04.
+**Status:** beschlossen am 2026-08-03, umgesetzt am 2026-08-04 — einschliesslich
+IGES, das dieselbe Bibliothek und dasselbe Ergebnisformat nutzt und deshalb keine
+eigene Entscheidung braucht.
 
 **Entscheidung.** STEP-Dateien werden über `occt-import-js` (OpenCascade als
 WebAssembly, LGPL-2.1) im Browser tesselliert. Dafür wird die

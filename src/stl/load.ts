@@ -8,10 +8,10 @@
  * Frage, welches der beiden Ergebnisse zuerst zurueckkommt.
  */
 
-import { DEFAULT_STEP_QUALITY, type StepQuality } from "./step-mesh";
+import { DEFAULT_TESSELLATION_QUALITY, type CadFormat, type TessellationQuality } from "./occt";
 import type {
   MeshStats,
-  StepWorkerRequest,
+  CadWorkerRequest,
   StlErrorCode,
   StlFormat,
   WorkerRequest,
@@ -29,12 +29,12 @@ export interface LoadedModel {
   solidName: string | null;
   trailingBytes: number;
   stats: MeshStats;
-  /** Angewandter Skalierungsfaktor (1 = mm, 25.4 = Zoll-Datei). Bei STEP immer 1. */
+  /** Angewandter Skalierungsfaktor (1 = mm, 25.4 = Zoll-Datei). Bei STEP/IGES immer 1. */
   scale: number;
-  /** Nur bei STEP: Zahl der zusammengelegten Einzelkoerper. */
+  /** Nur bei STEP/IGES: Zahl der zusammengelegten Einzelkoerper. */
   parts?: number;
-  /** Nur bei STEP: die verwendete Tessellierungsguete. */
-  quality?: StepQuality;
+  /** Nur bei STEP/IGES: die verwendete Tessellierungsguete. */
+  quality?: TessellationQuality;
 }
 
 export interface LoadProgress {
@@ -64,17 +64,17 @@ export function loadStl(
   file: File,
   options: {
     scale?: number;
-    quality?: StepQuality;
+    quality?: TessellationQuality;
     onProgress?: (p: LoadProgress) => void;
   } = {},
 ): LoadHandle {
   const id = ++sequence;
-  const step = isStepFile(file);
-  // Bei STEP gibt es keinen Skalierungsfaktor: Die Einheit steht in der Datei,
+  const cadFormat = cadFormatOf(file);
+  // Bei STEP und IGES gibt es keinen Skalierungsfaktor: Die Einheit steht in der Datei,
   // OpenCascade rechnet sie auf Millimeter um. Ein zusaetzlicher Faktor waere
   // eine zweite, widersprechende Angabe.
-  const scale = step ? 1 : (options.scale ?? 1);
-  const quality = options.quality ?? DEFAULT_STEP_QUALITY;
+  const scale = cadFormat ? 1 : (options.scale ?? 1);
+  const quality = options.quality ?? DEFAULT_TESSELLATION_QUALITY;
   let worker: Worker | null = null;
   let cancelled = false;
 
@@ -97,11 +97,11 @@ export function loadStl(
         // Datei neben das Buendel — gleiche Herkunft, deshalb genuegt der
         // Richtlinie worker-src 'self'.
         //
-        // Zwei getrennte Worker, weil am STEP-Zweig OpenCascade als
+        // Zwei getrennte Worker, weil am CAD-Zweig OpenCascade als
         // WebAssembly haengt: 7,4 MB, die sonst jeder Besucher mitzoege, auch
         // wer nur STL oeffnet.
-        worker = step
-          ? new Worker(new URL("./step.worker.ts", import.meta.url), { type: "module" })
+        worker = cadFormat
+          ? new Worker(new URL("./cad.worker.ts", import.meta.url), { type: "module" })
           : new Worker(new URL("./parse.worker.ts", import.meta.url), { type: "module" });
 
         worker.onmessage = (event: MessageEvent<WorkerResponse>) => {
@@ -131,7 +131,7 @@ export function loadStl(
             stats: data.stats,
             scale,
             parts: data.parts,
-            quality: step ? quality : undefined,
+            quality: cadFormat ? quality : undefined,
           };
           cancel();
           resolve(model);
@@ -148,8 +148,8 @@ export function loadStl(
           );
         };
 
-        const request: WorkerRequest | StepWorkerRequest = step
-          ? { id, buffer, quality }
+        const request: WorkerRequest | CadWorkerRequest = cadFormat
+          ? { id, buffer, quality, format: cadFormat }
           : { id, buffer, scale };
         // Auch der Eingabepuffer wird uebergeben statt kopiert. Danach ist er auf
         // dem Hauptstrang leer — deshalb wird er hier auch nirgends aufgehoben.
@@ -165,25 +165,25 @@ export function loadStl(
   return { promise, cancel };
 }
 
-/** Dateiendung pruefen, bevor Megabyte gelesen werden. */
-export function looksLikeStlFile(file: File): boolean {
-  return /\.(stl|step|stp)$/i.test(file.name);
+/**
+ * Dateiendung pruefen, bevor Megabyte gelesen werden.
+ *
+ * Fuenf Endungen, drei Wege: STL geht durch den eigenen Parser, STEP und IGES
+ * ueber OpenCascade. Welcher, entscheidet cadFormatOf.
+ */
+export function isSupportedFile(file: File): boolean {
+  return /\.(stl|step|stp|iges|igs)$/i.test(file.name);
 }
 
 /**
- * STEP oder IGES-artige Endung?
+ * Laeuft die Datei ueber OpenCascade — und wenn ja, mit welcher Lesefunktion?
  *
- * .stp ist die verbreitete Kurzform von .step — beide meinen dasselbe Format.
- * Wer nur auf .step prueft, weist die Haelfte aller Dateien ab, die aus
- * SolidWorks und Inventor herauskommen.
+ * Beide Formate fuehren beide Kurzformen: .stp neben .step, .igs neben .iges.
+ * Wer nur die Langform prueft, weist die Haelfte aller Dateien ab, die aus
+ * SolidWorks, Inventor oder CATIA herauskommen.
  */
-export function isStepFile(file: File): boolean {
-  return /\.(step|stp)$/i.test(file.name);
-}
-
-/** Fuer die Anzeige: welches Format wurde erkannt? */
-export function fileKind(file: File): "stl" | "step" | "unbekannt" {
-  if (isStepFile(file)) return "step";
-  if (/\.stl$/i.test(file.name)) return "stl";
-  return "unbekannt";
+export function cadFormatOf(file: File): CadFormat | null {
+  if (/\.(step|stp)$/i.test(file.name)) return "step";
+  if (/\.(iges|igs)$/i.test(file.name)) return "iges";
+  return null;
 }

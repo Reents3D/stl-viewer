@@ -14,11 +14,11 @@ import { compactness, estimateMass, FILIGREE_THRESHOLD } from "../../lib/estimat
 import * as fmt from "../../lib/format";
 import { fitsInBuildVolume } from "../../stl/geometry";
 import type { LoadedModel } from "../../stl/load";
-import type { StepQuality } from "../../stl/step-mesh";
+import type { TessellationQuality } from "../../stl/occt";
 import { Chip, ConfidenceMark, DataRow, Disclosure, Icon, ICONS, Section, Select, Slider } from "../ui";
 
 /** Schluesselteil fuer die i18n-Beschriftung der Tessellierungsguete. */
-function qualityKey(quality: StepQuality | undefined): "Coarse" | "Medium" | "Fine" {
+function qualityKey(quality: TessellationQuality | undefined): "Coarse" | "Medium" | "Fine" {
   if (quality === "grob") return "Coarse";
   if (quality === "fein") return "Fine";
   return "Medium";
@@ -87,22 +87,32 @@ export function InspectPanel({
             value={
               model.format === "step"
                 ? "STEP"
-                : model.format === "binary"
-                  ? "Binär-STL"
-                  : "ASCII-STL"
+                : model.format === "iges"
+                  ? "IGES"
+                  : model.format === "binary"
+                    ? "Binär-STL"
+                    : "ASCII-STL"
             }
           />
           <DataRow label={t("stats.fileSize")} value={fmt.fileSize(model.fileSize, lang)} />
           {model.solidName && <DataRow label={t("stats.modelName")} value={model.solidName} />}
         </div>
 
-        {/* Bei STEP beziehen sich ALLE Zahlen darueber auf die Tessellierung.
-            Der Hinweis steht deshalb direkt darunter und nicht im Kleingedruckten. */}
-        {model.format === "step" && (
+        {/* Bei STEP und IGES beziehen sich ALLE Zahlen darueber auf die
+            Tessellierung. Der Hinweis steht deshalb direkt darunter und nicht im
+            Kleingedruckten. */}
+        {(model.format === "step" || model.format === "iges") && (
           <div className="mt-2 space-y-1.5">
             <p className="text-[11px] text-ok leading-snug">
               {t("step.approximation", { q: t(`step.quality${qualityKey(model.quality)}`) })}
             </p>
+            {/* IGES traegt haeufig lose Flaechen statt eines geschlossenen
+                Koerpers. Der Befund meldet dann "Loecher" — richtig, aber die
+                URSACHE ist eine andere als bei einem kaputten STL, und ohne
+                diesen Satz sucht der Kunde einen Fehler, den es nicht gibt. */}
+            {model.format === "iges" && stats.topology?.watertight === false && (
+              <p className="text-[11px] text-ok leading-snug">{t("iges.openSurfaces")}</p>
+            )}
             {(model.parts ?? 1) > 1 && (
               <p className="text-[11px] text-ok leading-snug">
                 {t("step.assembly", { n: model.parts ?? 1 })}

@@ -20,7 +20,7 @@ Bisher hieß die Lösung: Screenshots aus verschiedenen Winkeln, per E-Mail hin 
 und Änderungswünsche in Worten — „das Loch oben links, nein, das andere". Das kostet
 Runden, und Missverständnisse fallen erst im Druck auf.
 
-Mit diesem Werkzeug öffnet der Kunde die Datei einfach im Browser — **STL oder STEP**,
+Mit diesem Werkzeug öffnet der Kunde die Datei einfach im Browser — **STL, STEP oder IGES**,
 also auch das Format, in dem eine parametrische Konstruktion das Haus verlässt. Er dreht
 das Modell, markiert die Stellen, um die es geht, schreibt seine Änderungswünsche daneben
 — und erzeugt daraus eine Dokumentation: das Modell aus allen Richtungen, dazu jede
@@ -105,7 +105,7 @@ Wenn Sie es nachsehen wollen: Entwicklerwerkzeuge öffnen, Reiter „Netzwerk", 
 hineinziehen. Beim Öffnen einer **STL** erscheint dort genau ein Eintrag — der
 Auswertungsstrang des Werkzeugs selbst, vom selben Server.
 
-Nur beim Öffnen einer **STEP-Datei** kommt einmalig die Umwandlungsbibliothek dazu
+Nur beim Öffnen einer **STEP- oder IGES-Datei** kommt einmalig die Umwandlungsbibliothek dazu
 (7,4 MB WebAssembly, ebenfalls vom selben Server). Sie rechnet im Browser; Ihre Datei
 geht auch dabei nirgendwohin.
 
@@ -121,8 +121,8 @@ Prototypen nicht erst auf einen fremden Server laden, um ihn anzusehen.
 **[reents3d.github.io/stl-viewer](https://reents3d.github.io/stl-viewer/)** — im Browser
 öffnen, Datei hineinziehen. Sonst nichts.
 
-Gelesen werden **STL** (binär und ASCII) und **STEP** (`.step`, `.stp`). Bei STEP
-entfällt die Einheitenwahl — sie steht in der Datei.
+Gelesen werden **STL** (binär und ASCII), **STEP** (`.step`, `.stp`) und **IGES**
+(`.iges`, `.igs`). Bei STEP und IGES entfällt die Einheitenwahl — sie steht in der Datei.
 
 Läuft in jedem aktuellen Browser mit WebGL, auch auf Tablet und Telefon. Bei sehr großen
 Modellen (über ein paar Millionen Dreiecke) ist ein Rechner die bessere Wahl — dort
@@ -161,8 +161,8 @@ weiterhin.
 „passt" heißt: Der Hüllkörper geht hinein. Es heißt nicht, dass die Fertigung in dieser
 Lage sinnvoll ist.
 
-**Bei STEP beziehen sich alle Werte auf die Tessellierung.** Ein STEP beschreibt Flächen
-exakt; zum Anzeigen und Rechnen wird daraus ein Dreiecksnetz. Ein Zylinder wird dabei zum
+**Bei STEP und IGES beziehen sich alle Werte auf die Tessellierung.** Beide Formate
+beschreiben Flächen exakt; zum Anzeigen und Rechnen wird daraus ein Dreiecksnetz. Ein Zylinder wird dabei zum
 Vieleck — Volumen und Oberfläche liegen deshalb geringfügig unter den exakten Werten. Wie
 fein genähert wird, stellen Sie beim Öffnen ein; die Oberfläche weist die gewählte Stufe
 aus. Enthält die Datei eine **Baugruppe**, werden alle Körper zu einem Modell
@@ -177,7 +177,7 @@ maßgeblich. Ausführlich in [DISCLAIMER.md](DISCLAIMER.md).
 
 ## Für Entwickler
 
-Vite, React, TypeScript, Tailwind 4, three.js, jsPDF, occt-import-js (nur für STEP,
+Vite, React, TypeScript, Tailwind 4, three.js, jsPDF, occt-import-js (nur für STEP und IGES,
 nachgeladen). Kein Server, kein Backend, kein Build-Schritt zur Laufzeit.
 
 | Befehl | Zweck |
@@ -193,7 +193,7 @@ nachgeladen). Kein Server, kein Backend, kein Build-Schritt zur Laufzeit.
 ```
 src/
   stl/          Parser und Geometrie — ohne three.js, läuft auch unter Node
-                (STL selbst geschrieben, STEP über OpenCascade als WebAssembly)
+                (STL selbst geschrieben, STEP und IGES über OpenCascade als WebAssembly)
   viewer/       three.js-Szene, vollständig gekapselt
   export/       PDF, Bild, Anmerkungsdatei
   components/   Oberfläche
@@ -211,7 +211,7 @@ STL kommt aus CAD und aus Slicern, dort ist Z die Bauhöhe. So heißt die Höhe 
 in der Anzeige und im PDF gleich.
 
 **Im eigenen Quelltext gibt es kein `fetch`, und es darf keines geben.** Die einzige
-Anfrage, die je entsteht, holt die WebAssembly für den STEP-Import — von der eigenen
+Anfrage, die je entsteht, holt die WebAssembly für den STEP- und IGES-Import — von der eigenen
 Herkunft, aus dem Worker heraus. Die Pipeline prüft
 das gebaute Artefakt auf die Richtlinie und den Quelltext auf ausgehende Aufrufe. Details
 und die übrigen Entscheidungen mit Nebenwirkungen: [DECISIONS.md](DECISIONS.md).
@@ -242,7 +242,7 @@ Datei.
 
 Eigener Code unter MIT-Lizenz, siehe [LICENSE](LICENSE).
 
-Der STEP-Import nutzt [occt-import-js](https://github.com/kovacsv/occt-import-js)
+Der STEP- und IGES-Import nutzt [occt-import-js](https://github.com/kovacsv/occt-import-js)
 (**LGPL-2.1**) mit Open CASCADE Technology. Die Bibliothek wird unverändert und als
 eigenständige Datei ausgeliefert und lässt sich austauschen — Einzelheiten und die
 übrigen Bestandteile in [THIRD-PARTY.md](THIRD-PARTY.md).

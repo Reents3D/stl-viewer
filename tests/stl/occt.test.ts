@@ -3,10 +3,10 @@ import { describe, expect, test } from "vitest";
 import { analyseMesh } from "../../src/stl/geometry";
 import {
   convertOcctResult,
-  stepReadParams,
-  StepConversionError,
+  occtReadParams,
+  OcctConversionError,
   type OcctResult,
-} from "../../src/stl/step-mesh";
+} from "../../src/stl/occt";
 
 /** Ein indizierter Wuerfel, wie ihn OCCT liefern wuerde: 8 Ecken, 12 Dreiecke. */
 function indexedCube(s = 10, name = "wuerfel"): OcctResult {
@@ -67,7 +67,7 @@ describe("Umwandlung eines OCCT-Ergebnisses", () => {
 
 describe("Fehlerhafte Eingaben", () => {
   test("meldet einen fehlgeschlagenen Import", () => {
-    expect(() => convertOcctResult({ success: false, meshes: [] })).toThrow(StepConversionError);
+    expect(() => convertOcctResult({ success: false, meshes: [] })).toThrow(OcctConversionError);
   });
 
   test("meldet eine Datei ohne Flaechen", () => {
@@ -92,20 +92,20 @@ describe("Fehlerhafte Eingaben", () => {
 describe("Tessellierungsparameter", () => {
   test("gibt Millimeter vor, unabhaengig von der Guete", () => {
     for (const q of ["grob", "mittel", "fein"] as const) {
-      expect(stepReadParams(q).linearUnit).toBe("millimeter");
-      expect(stepReadParams(q).linearDeflectionType).toBe("bounding_box_ratio");
+      expect(occtReadParams(q).linearUnit).toBe("millimeter");
+      expect(occtReadParams(q).linearDeflectionType).toBe("bounding_box_ratio");
     }
   });
 
   test("feiner heisst kleinere Abweichung", () => {
-    expect(stepReadParams("fein").linearDeflection).toBeLessThan(
-      stepReadParams("mittel").linearDeflection,
+    expect(occtReadParams("fein").linearDeflection).toBeLessThan(
+      occtReadParams("mittel").linearDeflection,
     );
-    expect(stepReadParams("mittel").linearDeflection).toBeLessThan(
-      stepReadParams("grob").linearDeflection,
+    expect(occtReadParams("mittel").linearDeflection).toBeLessThan(
+      occtReadParams("grob").linearDeflection,
     );
-    expect(stepReadParams("fein").angularDeflection).toBeLessThan(
-      stepReadParams("grob").angularDeflection,
+    expect(occtReadParams("fein").angularDeflection).toBeLessThan(
+      occtReadParams("grob").angularDeflection,
     );
   });
 });

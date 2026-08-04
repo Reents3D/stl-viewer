@@ -16,7 +16,8 @@ Diese Datei ist der Arbeitsstand, nicht die Doku — was das Werkzeug kann, steh
 - Anmerkungen mit Markierungspin, Kategorie und gespeichertem Blickwinkel
 - PDF-Dokumentation mit Übersicht, Normalansichten, Rundumansichten je Achse und
   einer Seite je Anmerkung
-- Kein Upload, per `connect-src 'none'` erzwungen; CI prüft das am Artefakt
+- Kein Upload, per `connect-src 'self'` erzwungen; CI prüft das am Artefakt und
+  schlägt auch an, wenn jemand die Richtlinie weiter öffnet als beschlossen
 - **Überhang-Ansicht** mit einstellbarer Schwelle und Stützflächenanteil. Die
   Standfläche zählt nicht mit. Am Prüfkörper nachgerechnet: Tisch aus
   20×20×40-Bein und 60×60×10-Platte → 3.600 von 13.600 mm² = 26,5 %.
@@ -27,9 +28,11 @@ Diese Datei ist der Arbeitsstand, nicht die Doku — was das Werkzeug kann, steh
   in der Liste, unter 1,5 mm rot. Sieben Tests in `tests/lib/thickness.test.ts`.
 - **Versionsvergleich**: zweite STL durchscheinend darüber, Volumen- und
   Maßdifferenz mit Vorzeichen. Ausrichtung über den gemeinsamen CAD-Nullpunkt.
-- **STEP-Import** (.step/.stp) über OpenCascade als WebAssembly, nur bei Bedarf
-  nachgeladen. Einheit kommt aus der Datei, Tessellierungsgüte einstellbar,
-  Baugruppen werden zusammengelegt und als solche ausgewiesen.
+- **STEP- und IGES-Import** (.step/.stp/.iges/.igs) über OpenCascade als
+  WebAssembly, nur bei Bedarf nachgeladen. Einheit kommt aus der Datei,
+  Tessellierungsgüte einstellbar, Baugruppen werden zusammengelegt und als solche
+  ausgewiesen. Bei IGES weist die Oberfläche zusätzlich darauf hin, dass lose
+  Flächen formatbedingt sind und nicht auf einen Konstruktionsfehler deuten.
 - 84 Tests, CI und Pages-Auslieferung grün
 
 ## Offen
@@ -37,9 +40,6 @@ Diese Datei ist der Arbeitsstand, nicht die Doku — was das Werkzeug kann, steh
 Keine der beschlossenen Funktionen mehr. Naheliegende nächste Schritte, falls
 weitergebaut wird:
 
-- **IGES** liegt nach dem STEP-Import fast auf der Hand: `occt.ReadIgesFile` ist
-  dieselbe Bibliothek und liefert dasselbe Ergebnisformat, die Umwandlung in
-  `src/stl/step-mesh.ts` passt unverändert. Aufwand gering.
 - **Baugruppen getrennt zeigen** statt zusammengelegt — braucht eine Bauteilliste
   mit Sichtbarkeitsschaltern und ist damit ein eigenes Vorhaben.
 - **Wandstärke flächig** statt punktweise (Farbkarte über das ganze Modell). Braucht
@@ -49,9 +49,12 @@ weitergebaut wird:
 ## Offen aus dem Gespräch
 
 - Bei der Auswahl der nächsten Funktionen wurde zusätzlich „Something else"
-  angehakt, ohne Text. **Nachfragen, was gemeint war.**
-- Der Name **„Großformat"** für die Anlage 800 × 800 × 1.000 mm ist gesetzt, aber
-  nicht bestätigt — steht in [`src/config/site.ts`](src/config/site.ts).
+  angehakt, ohne dass ein Text ankam. Der Wunsch dahinter ist weiterhin unbekannt.
+- Bauräume sind am 2026-08-04 von Riko bestätigt und berichtigt: XXL
+  1.800 × 2.400 × 1.800, XXL Hoch 1.200 × 1.200 × **2.000** (vorher fälschlich
+  2.200), Großformat 800 × 800 × 1.000. **Der falsche 2.200er-Wert steht weiterhin
+  im öffentlichen FDM-Materialberater** (`src/config/site.ts` dort, Eintrag
+  „Hochformat") — dort ebenfalls berichtigen.
 
 ## Handprüfung vor jeder Veröffentlichung
 
@@ -65,7 +68,7 @@ weitergebaut wird:
    erscheinen — der eigene Auswertungsstrang, von derselben Herkunft. Bei einer
    STEP-Datei kommt einmalig die WebAssembly dazu, ebenfalls von derselben
    Herkunft. Nichts sonst.
-7. STEP-Datei mit bekannten Maßen laden — Einheit muss aus der Datei kommen, und
+7. STEP- und IGES-Datei mit bekannten Maßen laden — Einheit muss aus der Datei kommen, und
    die Seitenleiste muss den Tessellierungshinweis zeigen
 
 ### Hinweis zur Prüfung im Browser

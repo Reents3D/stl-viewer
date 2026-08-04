@@ -22,10 +22,10 @@ const S = {
   "cta.advisor": { de: "Materialberater", en: "Material advisor" },
 
   /* ------------------------------------------------------------- Datei oeffnen */
-  "drop.title": { de: "STL oder STEP hierher ziehen", en: "Drop an STL or STEP file here" },
+  "drop.title": { de: "STL, STEP oder IGES hierher ziehen", en: "Drop an STL, STEP or IGES file here" },
   "drop.sub": {
-    de: "Oder Datei auswählen. STL binär und ASCII, STEP und STP — beliebige Größe.",
-    en: "Or choose a file. STL binary and ASCII, STEP and STP — any size.",
+    de: "Oder Datei auswählen. STL binär und ASCII, STEP, STP, IGES, IGS — beliebige Größe.",
+    en: "Or choose a file. STL binary and ASCII, STEP, STP, IGES, IGS — any size.",
   },
   "drop.button": { de: "Datei auswählen", en: "Choose file" },
   "drop.release": { de: "Loslassen zum Öffnen", en: "Release to open" },
@@ -34,19 +34,19 @@ const S = {
     en: "The file stays on your computer. There is no upload.",
   },
   /* ---------------------------------------------------------------------- STEP */
-  "step.quality": { de: "Tessellierung (nur STEP)", en: "Tessellation (STEP only)" },
+  "step.quality": { de: "Tessellierung (STEP und IGES)", en: "Tessellation (STEP and IGES)" },
   "step.qualityCoarse": { de: "Grob", en: "Coarse" },
   "step.qualityMedium": { de: "Mittel", en: "Medium" },
   "step.qualityFine": { de: "Fein", en: "Fine" },
   "step.qualityHint": {
-    de: "STEP beschreibt Flächen exakt. Zum Anzeigen und Rechnen wird daraus ein Dreiecksnetz — feiner heißt genauer und langsamer.",
-    en: "STEP describes surfaces exactly. For display and computation it is turned into a triangle mesh — finer means more accurate and slower.",
+    de: "STEP und IGES beschreiben Flächen exakt. Zum Anzeigen und Rechnen wird daraus ein Dreiecksnetz — feiner heißt genauer und langsamer.",
+    en: "STEP and IGES describe surfaces exactly. For display and computation they are turned into a triangle mesh — finer means more accurate and slower.",
   },
   "step.unitNote": {
-    de: "Für STEP entfällt die Einheitenwahl: Sie steht in der Datei und wird auf Millimeter umgerechnet.",
-    en: "For STEP no unit choice is needed: it is stored in the file and converted to millimetres.",
+    de: "Für STEP und IGES entfällt die Einheitenwahl: Sie steht in der Datei und wird auf Millimeter umgerechnet.",
+    en: "For STEP and IGES no unit choice is needed: it is stored in the file and converted to millimetres.",
   },
-  "step.loading": { de: "STEP wird geöffnet — OpenCascade wird geladen", en: "Opening STEP — loading OpenCascade" },
+  "step.loading": { de: "Datei wird geöffnet — OpenCascade wird geladen", en: "Opening file — loading OpenCascade" },
   "step.approximation": {
     de: "Angezeigt und gerechnet wird die Tessellierung ({q}), nicht die exakte Fläche. Ein Zylinder wird dabei zum Vieleck — Volumen und Oberfläche liegen deshalb geringfügig unter den exakten Werten.",
     en: "Displayed and computed is the tessellation ({q}), not the exact surface. A cylinder becomes a polygon — volume and surface area are therefore slightly below the exact values.",
@@ -55,9 +55,13 @@ const S = {
     de: "Baugruppe aus {n} Einzelkörpern, zusammengelegt zu einem Modell. Volumen und Gewicht sind die SUMME aller Teile.",
     en: "Assembly of {n} separate bodies, merged into one model. Volume and weight are the SUM of all parts.",
   },
+  "iges.openSurfaces": {
+    de: "IGES speichert häufig einzelne Flächen statt eines geschlossenen Körpers. Ein Befund „Netz hat Löcher“ hat dann seine Ursache im Format, nicht in Ihrer Konstruktion — Volumen und Gewicht sind hier trotzdem nicht belastbar.",
+    en: "IGES often stores loose surfaces rather than a closed solid. A finding of “mesh has holes” then comes from the format, not from your design — volume and weight are still not meaningful here.",
+  },
   "error.step-failed": {
-    de: "OpenCascade konnte die STEP-Datei nicht lesen.",
-    en: "OpenCascade could not read the STEP file.",
+    de: "OpenCascade konnte die Datei nicht lesen.",
+    en: "OpenCascade could not read the file.",
   },
 
   "drop.units": { de: "Einheit der Datei", en: "File unit" },
@@ -93,8 +97,8 @@ const S = {
     en: "The model is too large for the available memory.",
   },
   "error.wrongType": {
-    de: "Dieses Format wird nicht gelesen. Erwartet wird .stl, .step oder .stp.",
-    en: "This format is not supported. Expected .stl, .step or .stp.",
+    de: "Dieses Format wird nicht gelesen. Erwartet wird .stl, .step, .stp, .iges oder .igs.",
+    en: "This format is not supported. Expected .stl, .step, .stp, .iges or .igs.",
   },
   "error.retry": { de: "Andere Datei wählen", en: "Choose another file" },
 

@@ -6,7 +6,7 @@
  * diesem Quelltext gibt es kein fetch, kein XHR und keinen Serveraufruf; die
  * Richtlinie im Build laesst ohnehin nur die eigene Herkunft zu (connect-src
  * 'self', siehe vite.config.ts und ADR-013 — die einzige Anfrage, die je
- * entsteht, holt die WebAssembly fuer den STEP-Import).
+ * entsteht, holt die WebAssembly fuer den STEP- und IGES-Import).
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -34,11 +34,11 @@ import {
   type ExportOptions,
 } from "./export/run-export";
 import { detectLang, makeT, type Lang } from "./i18n";
-import { DEFAULT_STEP_QUALITY, type StepQuality } from "./stl/step-mesh";
+import { DEFAULT_TESSELLATION_QUALITY, type TessellationQuality } from "./stl/occt";
 import * as fmt from "./lib/format";
 import type { OverhangResult } from "./lib/overhang";
 import { fitsInBuildVolume } from "./stl/geometry";
-import { loadStl, looksLikeStlFile, StlLoadError, type LoadedModel, type LoadProgress } from "./stl/load";
+import { loadStl, isSupportedFile, StlLoadError, type LoadedModel, type LoadProgress } from "./stl/load";
 import type { StlErrorCode } from "./stl/types";
 import type { ModelScene, HitResult } from "./viewer/scene";
 import {
@@ -57,7 +57,7 @@ export default function App() {
   const t = useMemo(() => makeT(lang), [lang]);
 
   const [unit, setUnit] = useState<UnitChoice>("mm");
-  const [stepQuality, setStepQuality] = useState<StepQuality>(DEFAULT_STEP_QUALITY);
+  const [tessellation, setTessellation] = useState<TessellationQuality>(DEFAULT_TESSELLATION_QUALITY);
   const [model, setModel] = useState<LoadedModel | null>(null);
   const [loading, setLoading] = useState<LoadProgress | null>(null);
   const [error, setError] = useState<{ code: StlErrorCode; message: string } | null>(null);
@@ -94,9 +94,9 @@ export default function App() {
 
   const openFiles = useCallback(
     (files: readonly File[]) => {
-      const file = files.find(looksLikeStlFile) ?? files[0];
+      const file = files.find(isSupportedFile) ?? files[0];
       if (!file) return;
-      if (!looksLikeStlFile(file)) {
+      if (!isSupportedFile(file)) {
         setError({ code: "not-stl", message: t("error.wrongType") });
         return;
       }
@@ -107,7 +107,7 @@ export default function App() {
 
       const handle = loadStl(file, {
         scale: UNIT_SCALE[unit],
-        quality: stepQuality,
+        quality: tessellation,
         onProgress: setLoading,
       });
       loadRef.current = handle;
@@ -136,7 +136,7 @@ export default function App() {
           }
         });
     },
-    [stepQuality, t, unit],
+    [tessellation, t, unit],
   );
 
   /**
@@ -154,7 +154,7 @@ export default function App() {
 
   const pickStl = useCallback(async () => {
     if (!confirmDiscard()) return;
-    const file = await pickFile(".stl,.step,.stp,model/stl,model/step,application/sla,application/step");
+    const file = await pickFile(".stl,.step,.stp,.iges,.igs,model/stl,model/step,model/iges,application/sla");
     if (file) openFiles([file]);
   }, [confirmDiscard, openFiles]);
 
@@ -167,10 +167,10 @@ export default function App() {
    * die Abweichung waere der Faktor 25,4 statt der Aenderung.
    */
   const loadCompare = useCallback(async () => {
-    const file = await pickFile(".stl,.step,.stp,model/stl,model/step,application/sla,application/step");
+    const file = await pickFile(".stl,.step,.stp,.iges,.igs,model/stl,model/step,model/iges,application/sla");
     if (!file || !model) return;
     try {
-      const loaded = await loadStl(file, { scale: model.scale, quality: stepQuality }).promise;
+      const loaded = await loadStl(file, { scale: model.scale, quality: tessellation }).promise;
       setCompareModel(loaded);
     } catch (cause: unknown) {
       setError({
@@ -178,7 +178,7 @@ export default function App() {
         message: cause instanceof Error ? cause.message : String(cause),
       });
     }
-  }, [model, stepQuality]);
+  }, [model, tessellation]);
 
   /** Zurueck zur Startseite — bereit fuer die naechste Datei. */
   const goHome = useCallback(() => {
@@ -454,8 +454,8 @@ export default function App() {
           lang={lang}
           unit={unit}
           onUnit={setUnit}
-          quality={stepQuality}
-          onQuality={setStepQuality}
+          quality={tessellation}
+          onQuality={setTessellation}
           onPick={pickStl}
           error={error ? { title: t("error.title"), detail: errorDetail(t, error) } : null}
         />
