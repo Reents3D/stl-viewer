@@ -24,6 +24,7 @@ import {
 import { computeOverhang, type OverhangResult } from "../lib/overhang";
 import { probeThickness } from "../lib/thickness";
 import { buildReference, referenceInfo, type ScaleReferenceId } from "./reference";
+import { drawWatermark, type WatermarkLogos } from "./watermark";
 import {
   COMPARE_COLOR,
   OVERHANG_COLOR,
@@ -63,6 +64,14 @@ export interface CaptureOptions {
    * Genau dafuer ist die Anmerkung da.
    */
   markers?: readonly CaptureMarker[];
+  /**
+   * Wortmarke unten rechts ins Bild.
+   *
+   * Nur fuer den Bildexport gesetzt, nicht fuer die Aufnahmen im PDF: Dort
+   * traegt schon das Deckblatt die Marke, und ein zweites Logo auf jedem der
+   * bis zu 78 Einzelbilder waere Krach statt Kennzeichnung.
+   */
+  watermark?: WatermarkLogos | null;
 }
 
 export interface CaptureMarker {
@@ -881,6 +890,7 @@ export class ModelScene {
       hideReference = false,
       transparent = false,
       markers,
+      watermark,
     } = options;
     const previousSize = new THREE.Vector2();
     this.renderer.getSize(previousSize);
@@ -901,21 +911,24 @@ export class ModelScene {
     const mime = transparent ? "image/png" : "image/jpeg";
     let dataUrl: string;
 
-    if (markers && markers.length > 0) {
+    if ((markers && markers.length > 0) || watermark) {
       // Ueber eine zweite, zweidimensionale Flaeche gelegt statt als Objekt in
       // die Szene gehaengt: Eine Marke soll IMMER gleich gross sein, egal wie
       // weit die Kamera weg steht, und sie soll nie im Bauteil verschwinden.
       // Beides waere mit einem Sprite in der Szene ein Kampf gegen die
-      // Perspektive und den Tiefenpuffer.
+      // Perspektive und den Tiefenpuffer. Fuer die Wortmarke gilt dasselbe.
       const overlay = document.createElement("canvas");
       overlay.width = width;
       overlay.height = height;
       const ctx = overlay.getContext("2d");
       if (ctx) {
         // drawImage liest denselben Zeichenpuffer wie toDataURL und muss
-        // deshalb ebenso im selben Durchlauf passieren.
+        // deshalb ebenso im selben Durchlauf passieren. Alles danach —
+        // Anmerkungsmarken, Wortmarke — arbeitet nur noch auf dieser Kopie
+        // und darf sich Zeit lassen.
         ctx.drawImage(this.renderer.domElement, 0, 0, width, height);
-        for (const marker of markers) this.drawMarker(ctx, marker, width, height);
+        if (markers) for (const marker of markers) this.drawMarker(ctx, marker, width, height);
+        if (watermark) drawWatermark(ctx, watermark, width, height);
         dataUrl = overlay.toDataURL(mime, 0.92);
       } else {
         dataUrl = this.renderer.domElement.toDataURL(mime, 0.92);

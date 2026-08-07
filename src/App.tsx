@@ -41,6 +41,7 @@ import { fitsInBuildVolume } from "./stl/geometry";
 import { loadStl, isSupportedFile, StlLoadError, type LoadedModel, type LoadProgress } from "./stl/load";
 import type { StlErrorCode } from "./stl/types";
 import type { ModelScene, HitResult } from "./viewer/scene";
+import { loadWatermarkLogos } from "./viewer/watermark";
 import {
   DEFAULT_VIEW_STATE,
   type Annotation,
@@ -378,10 +379,19 @@ export default function App() {
 
   /* ------------------------------------------------------------------ Export */
 
-  const exportPng = useCallback(() => {
+  /**
+   * Das Bild traegt die Wortmarke, das PDF nicht.
+   *
+   * Ein einzelnes Bild wird weitergeleitet und aus dem Zusammenhang gerissen;
+   * beim PDF steht die Herkunft auf dem Deckblatt. Die Marke wird VOR der
+   * Aufnahme geladen, weil zwischen render() und toDataURL() nichts liegen darf
+   * — ein await an dieser Stelle liefert ein schwarzes Bild.
+   */
+  const exportPng = useCallback(async () => {
     const scene = sceneRef.current;
     if (!scene || !model) return;
-    const image = scene.capture({ width: 2000, height: 1500, clean: false });
+    const watermark = await loadWatermarkLogos(import.meta.env.BASE_URL);
+    const image = scene.capture({ width: 2000, height: 1500, clean: false, watermark });
     downloadDataUrl(
       image,
       `${fmt.isoDate(new Date())}-${fmt.safeFileName(model.fileName)}.jpg`,

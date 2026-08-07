@@ -252,3 +252,34 @@ der Tessellierung auf den ERSATZ, nicht auf das Original — ein Zylinder wird z
 Vieleck. Das muss in der Oberfläche stehen, sobald eine STEP-Datei geöffnet ist,
 und nicht nur hier. Positiv: STEP trägt seine Einheit in der Datei, die
 Einheitenwahl beim Öffnen entfällt dort.
+
+---
+
+## ADR-014 — Das Bild trägt die Wortmarke, das PDF nicht
+
+**Status:** beschlossen und umgesetzt am 2026-08-07.
+
+**Entscheidung.** Der Bildexport („Bild sichern") zeichnet die Wortmarke unten rechts
+ins Bild. Die bis zu 78 Einzelaufnahmen im PDF bleiben unberührt.
+
+**Warum der Unterschied.** Ein einzelnes Bild verlässt das Werkzeug und wandert danach
+durch Mails, Angebotsmappen und Chatverläufe. Nach dem zweiten Weiterleiten ist nicht
+mehr erkennbar, woher es stammt — genau dann, wenn es kommerziell etwas wert wäre. Beim
+PDF steht die Herkunft auf dem Deckblatt; eine Marke zusätzlich auf jeder Rundumansicht
+wäre Krach statt Kennzeichnung.
+
+**Zwei Fassungen, nicht eine.** Der Hintergrund ist wahlweise hell, dunkel oder ein
+Verlauf, und unten rechts kann statt des Hintergrunds auch das Bauteil stehen. Eine
+feste Farbe wäre in einem der Fälle unsichtbar. Deshalb wird die mittlere Helligkeit
+genau an der Stelle gemessen, an der die Marke landet, und danach zwischen der schwarzen
+und der weißen Fassung gewählt. Gewichtet nach Wahrnehmung statt als schlichter
+Kanalmittelwert — sonst gälten sattes Blau und sattes Gelb als gleich hell.
+
+**Falle, die dabei umgangen wurde.** Zwischen `render()` und `toDataURL()` darf nichts
+liegen, sonst gibt der Browser den Zeichenpuffer frei und das Bild wird schwarz (siehe
+den Hinweis an `capture`). Die beiden SVG-Dateien werden deshalb **vor** der Aufnahme
+geladen; im Aufnahmedurchlauf selbst steht kein `await`.
+
+**Was bewusst nicht geprüft wird.** Ob die Marke auf dem Bauteil oder daneben liegt.
+Die Helligkeitsmessung deckt beides ab, eine Ausweichlogik („Marke verschieben, wenn
+Bauteil darunter") wäre Aufwand für einen Fall, den der Kunde durch Drehen selbst löst.
