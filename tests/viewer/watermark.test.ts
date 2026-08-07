@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 
-import { LOGO_ASPECT, meanLuminance, watermarkBox } from "../../src/viewer/watermark";
+import { LOGO_ASPECT } from "../../src/config/site";
+import { meanLuminance, watermarkBox } from "../../src/viewer/watermark";
 
 /** Das Format des Bildexports aus App.tsx. */
 const SHOT = { width: 2000, height: 1500 };

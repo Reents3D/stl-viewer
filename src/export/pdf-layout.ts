@@ -8,6 +8,55 @@
  * Ansichten, ohne dass irgendwo steht, dass sie fehlen.
  */
 
+import { LOGO_ASPECT } from "../config/site";
+
+/**
+ * Breite der Wortmarke auf dem Deckblatt, in Millimetern.
+ *
+ * Ueber die Breite gesetzt und nicht ueber die Hoehe, weil die Marke an der
+ * linken Satzkante ausgerichtet steht: 30 mm sind ein Sechstel der Satzbreite.
+ * Die Hoehe ergibt sich daraus — sie wird NIE eigenstaendig gewaehlt, sonst
+ * entsteht wieder die Stauchung, die `LOGO_ASPECT` beschreibt.
+ */
+const LOGO_PDF_WIDTH = 30;
+
+/**
+ * Zeilenhoehe des Markenblocks im Kopf des Deckblatts, in Millimetern.
+ *
+ * Muss deutlich ueber der Markenhoehe liegen, sonst klebt die Zeile
+ * "MODELLDOKUMENTATION" darunter an der Marke. Frueher standen hier 16 mm — das
+ * passte zur damals gestauchten Marke von 7,56 mm Hoehe und liess knapp 4 mm
+ * Luft, als die Marke auf ihre richtigen 12,2 mm wuchs.
+ */
+export const LOGO_BLOCK_HEIGHT = 20;
+
+export interface LogoBox {
+  width: number;
+  height: number;
+  /**
+   * Grundlinie fuer Text, der neben der Marke auf gleicher Hoehe stehen soll,
+   * gemessen ab der Oberkante der Marke. Ohne diesen Wert wird die Adresse
+   * rechts von Hand auf einen Zahlenwert gesetzt und rutscht bei jeder
+   * Groessenaenderung aus der Flucht.
+   */
+  textBaseline: number;
+}
+
+/**
+ * Masse der Wortmarke auf dem Deckblatt.
+ *
+ * `fontSize` ist die Punktgroesse des Textes, der daneben steht — sie geht in
+ * die Grundlinie ein, weil ein Text auf seiner Grundlinie sitzt und nicht auf
+ * seiner Mitte.
+ */
+export function logoBox(fontSize: number, width = LOGO_PDF_WIDTH): LogoBox {
+  const height = width / LOGO_ASPECT;
+  // 25,4/72 rechnet Punkt in Millimeter; 0,35 ist der ueblich angesetzte
+  // Anteil der Schrifthoehe oberhalb der Grundlinie (die x-Hoehe zur Haelfte).
+  const halfGlyph = (fontSize * 25.4) / 72 * 0.35;
+  return { width, height, textBaseline: height / 2 + halfGlyph };
+}
+
 export interface GridInput {
   count: number;
   areaWidth: number;

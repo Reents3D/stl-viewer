@@ -1,6 +1,14 @@
 import { describe, expect, test } from "vitest";
 
-import { columnsFor, countShots, imageGrid, placeImages } from "../../src/export/pdf-layout";
+import { LOGO_ASPECT } from "../../src/config/site";
+import {
+  columnsFor,
+  countShots,
+  imageGrid,
+  logoBox,
+  placeImages,
+  LOGO_BLOCK_HEIGHT,
+} from "../../src/export/pdf-layout";
 
 const A4_CONTENT = { areaWidth: 180, areaHeight: 215, aspect: 4 / 3, gap: 4, captionHeight: 5 };
 
@@ -86,5 +94,41 @@ describe("Aufnahmezahl", () => {
 
   test("kommt ohne jede Bilderstrecke aus", () => {
     expect(countShots({ axes: 0, perAxis: 10, standardViews: false, annotations: 0 })).toBe(0);
+  });
+});
+
+describe("Wortmarke auf dem Deckblatt", () => {
+  test("haelt das Seitenverhaeltnis der Logo-Datei ein", () => {
+    // Der Fehler, den dieser Test verhindert: 42 x 7,56 mm standen jahrelang
+    // fest verdrahtet im Deckblatt und stammten aus einer laengst
+    // ausgetauschten Logo-Datei. Die Marke war damit auf 44 % ihrer Hoehe
+    // gestaucht — auf jedem Dokument, das zum Kunden ging.
+    const box = logoBox(7.5);
+    expect(box.width / box.height).toBeCloseTo(LOGO_ASPECT, 6);
+  });
+
+  test("stauchtes Verhaeltnis von frueher wird nicht mehr erzeugt", () => {
+    const box = logoBox(7.5);
+    expect(box.width / box.height).not.toBeCloseTo(42 / 7.56, 1);
+  });
+
+  test("laesst Luft zur Zeile darunter", () => {
+    // Dort steht "MODELLDOKUMENTATION". Beim Berichtigen des
+    // Seitenverhaeltnisses wuchs die Marke von 7,56 auf 12,2 mm und klebte an
+    // dieser Zeile, weil der Block bei 16 mm stehengeblieben war.
+    const box = logoBox(7.5);
+    expect(LOGO_BLOCK_HEIGHT - box.height).toBeGreaterThanOrEqual(5);
+  });
+
+  test("Grundlinie des Nebentextes liegt auf der Mitte der Marke", () => {
+    const box = logoBox(7.5);
+    expect(box.textBaseline).toBeGreaterThan(box.height / 2);
+    expect(box.textBaseline).toBeLessThan(box.height);
+  });
+
+  test("skaliert die Hoehe mit der Breite", () => {
+    const schmal = logoBox(7.5, 20);
+    const breit = logoBox(7.5, 40);
+    expect(breit.height).toBeCloseTo(schmal.height * 2, 6);
   });
 });

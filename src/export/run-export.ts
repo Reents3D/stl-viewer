@@ -19,8 +19,8 @@ import type { LoadedModel } from "../stl/load";
 import type { CaptureMarker, ModelScene } from "../viewer/scene";
 import { ANNOTATION_CATEGORIES, type Annotation, type Axis, type StandardView } from "../viewer/types";
 import { rasterizeSvg } from "./files";
-import { buildPdf, SHOT_ASPECT, type PdfTurntable } from "./pdf";
-import { countShots } from "./pdf-layout";
+import { buildPdf, LOGO_TEXT_SIZE, SHOT_ASPECT, type PdfTurntable } from "./pdf";
+import { countShots, logoBox } from "./pdf-layout";
 
 export const SHOT_WIDTHS = { klein: 900, mittel: 1400, gross: 2000 } as const;
 export type ShotQuality = keyof typeof SHOT_WIDTHS;
@@ -121,7 +121,11 @@ export async function runPdfExport(context: ExportContext): Promise<jsPDF> {
   const originalCamera = scene.cameraState();
 
   try {
-    const logo = await rasterizeSvg(context.logoUrl, 42, 7.56);
+    // Masse aus derselben Rechnung wie die Platzierung auf dem Deckblatt.
+    // Wuerde hier ein anderes Verhaeltnis stehen, waere schon das gerasterte
+    // Bild verzerrt — und kein noch so richtiges addImage brauchte das zurueck.
+    const logoSize = logoBox(LOGO_TEXT_SIZE);
+    const logo = await rasterizeSvg(context.logoUrl, logoSize.width, logoSize.height);
     guard();
 
     const heroImage = scene.capture({ ...shot, clean: true });

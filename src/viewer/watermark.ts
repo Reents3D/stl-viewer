@@ -13,8 +13,7 @@
  * Marke landet, und danach entschieden.
  */
 
-/** Seitenverhaeltnis der Wortmarke, aus dem viewBox der SVG-Dateien. */
-export const LOGO_ASPECT = 695.85 / 283.41;
+import { LOGO_ASPECT } from "../config/site";
 
 /** Anteil der Bildbreite, den die Wortmarke einnimmt. */
 const WIDTH_SHARE = 0.14;

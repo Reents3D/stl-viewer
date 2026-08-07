@@ -26,7 +26,7 @@ import * as fmt from "../lib/format";
 import type { LoadedModel } from "../stl/load";
 import type { FitResult } from "../stl/geometry";
 import { ANNOTATION_CATEGORIES, type Annotation, type Axis, type StandardView } from "../viewer/types";
-import { placeImages } from "./pdf-layout";
+import { logoBox, placeImages, LOGO_BLOCK_HEIGHT } from "./pdf-layout";
 
 /* ------------------------------------------------------------------- Farben */
 
@@ -43,6 +43,9 @@ const MARGIN = { left: 15, right: 15, top: 14, bottom: 18 };
 const CONTENT_WIDTH = PAGE.width - MARGIN.left - MARGIN.right;
 /** Bildseitenverhaeltnis aller Aufnahmen — muss zur Aufnahmegroesse passen. */
 export const SHOT_ASPECT = 4 / 3;
+
+/** Punktgroesse der Adresse neben der Wortmarke auf dem Deckblatt. */
+export const LOGO_TEXT_SIZE = 7.5;
 
 /** Zeilenhoehe in mm zu einer Schriftgroesse in Punkt. */
 const lh = (pt: number, factor = 1.35): number => (pt * 25.4 * factor) / 72;
@@ -213,15 +216,23 @@ class Layout {
     d.line(MARGIN.left, MARGIN.top, PAGE.width - MARGIN.right, MARGIN.top);
     this.y = MARGIN.top + 8;
 
+    // Masse aus logoBox(), nicht von Hand: Die Hoehe folgt der Breite ueber
+    // LOGO_ASPECT. Frueher standen hier 42 x 7,56 mm — ein Verhaeltnis aus einer
+    // laengst ausgetauschten Logo-Datei, das die Marke auf 44 % ihrer Hoehe
+    // stauchte. Siehe die Begruendung an LOGO_ASPECT in config/site.ts.
+    const brand = logoBox(LOGO_TEXT_SIZE);
     if (logo) {
-      // Seitenverhaeltnis der Wortmarke: 200 zu 36 aus der SVG-Datei.
-      d.addImage(logo, "PNG", MARGIN.left, this.y, 42, 7.56);
+      d.addImage(logo, "PNG", MARGIN.left, this.y, brand.width, brand.height);
     }
     d.setFont("helvetica", "normal");
-    d.setFontSize(7.5);
+    d.setFontSize(LOGO_TEXT_SIZE);
     d.setTextColor(...MUTED);
-    d.text(SITE.urls.live, PAGE.width - MARGIN.right, this.y + 5, { align: "right" });
-    this.y += 16;
+    // Grundlinie aus derselben Rechnung — die Adresse steht damit auf der Mitte
+    // der Marke, egal wie gross diese kuenftig gesetzt wird.
+    d.text(SITE.urls.live, PAGE.width - MARGIN.right, this.y + brand.textBaseline, {
+      align: "right",
+    });
+    this.y += LOGO_BLOCK_HEIGHT;
 
     d.setFont("helvetica", "bold");
     d.setFontSize(8);

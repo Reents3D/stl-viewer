@@ -74,6 +74,26 @@ export const SITE = {
 
 export type BuildVolume = (typeof SITE.buildVolumes)[number];
 
+/**
+ * Seitenverhaeltnis der Wortmarke — Breite geteilt durch Hoehe.
+ *
+ * Stammt aus dem viewBox der drei Dateien in `public/brand/`
+ * (`reents-logo-horizontal-*.svg`, alle 695,85 x 283,41).
+ *
+ * WARUM DAS HIER STEHT UND NICHT ZWEIMAL IM QUELLTEXT.
+ * Genau daran ist ein Fehler ausgeliefert worden: Das PDF setzte die Marke mit
+ * 42 x 7,56 mm — ein Verhaeltnis von 5,6 zu 1, das aus einer FRUEHEREN
+ * Logo-Datei stammte (der Kommentar sprach von "200 zu 36"). Die Datei wurde
+ * spaeter ausgetauscht, die Masse blieben stehen. Auf jedem Deckblatt, das zum
+ * Kunden ging, war die Wortmarke seither auf 44 % ihrer Hoehe gestaucht und
+ * "TECHNOLOGIES" zusammengedrueckt.
+ *
+ * Wer die Logo-Dateien austauscht, aendert diesen Wert mit — und nur ihn.
+ * `logoBox()` in `export/pdf-layout.ts` und die Bildmarke im Bildexport lesen
+ * beide von hier.
+ */
+export const LOGO_ASPECT = 695.85 / 283.41;
+
 /** UTM anhaengen, damit die kommerzielle Wirkung des Werkzeugs messbar bleibt. */
 export function trackedUrl(url: string): string {
   // Ohne Pfad haengt die Query sonst direkt an der Domain: "reents3d.de?utm=..."
