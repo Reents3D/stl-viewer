@@ -31,10 +31,22 @@ jobs:
       # Basispfad kommt aus vite.config.ts und steht seit dem Umzug auf
       # viewer.reents3d.de auf "/". Kein VITE_BASE mehr noetig.
       #
-      # Die Domain selbst haengt an public/CNAME. Die Datei MUSS im Artefakt
-      # liegen: Ein Pages-Deploy ohne sie setzt die eigene Domain in den
-      # Einstellungen zurueck, und die Seite ist nur noch ueber die
-      # github.io-Adresse erreichbar.
+      # WO DIE DOMAIN WIRKLICH HAENGT — nicht an public/CNAME.
+      # Bei Veroeffentlichung ueber Actions (build_type: workflow) liest GitHub
+      # die eigene Domain NUR aus den Repository-Einstellungen; eine CNAME-Datei
+      # im Artefakt wird nicht ausgewertet. Beim klassischen Zweig-Deploy ist es
+      # umgekehrt — daher die verbreitete Gegenbehauptung.
+      #
+      # Am 2026-08-07 einmal teuer gelernt: Basispfad auf "/" umgestellt und
+      # veroeffentlicht, waehrend die Domain in den Einstellungen leer stand.
+      # Ergebnis war eine weisse Seite unter der alten Adresse (Dateiverweise
+      # zeigten auf die Wurzel) und nichts unter der neuen. Stand per API
+      # gepruefte Wahrheit:
+      #   gh api repos/Reents3D/stl-viewer/pages   → "cname" darf nicht null sein
+      #
+      # public/CNAME bleibt trotzdem im Buendel: Es kostet nichts, dokumentiert
+      # die Zugehoerigkeit und traegt, falls das Repository je wieder ueber
+      # einen Zweig veroeffentlicht.
       - run: npm run build
       - name: Artefakt pruefen (Richtlinie, externe Ressourcen)
         run: node scripts/check-artifact.mjs dist
