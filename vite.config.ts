@@ -80,10 +80,15 @@ function securityHeaders(): Plugin {
   };
 }
 
-// Basispfad ueber die Umgebung, damit derselbe Build auf GitHub Pages
-// (/stl-viewer/) und spaeter unter einer eigenen Domain (/) funktioniert.
+// Basispfad. Seit dem Umzug auf viewer.reents3d.de liegt die Anwendung in der
+// Wurzel — deshalb "/" als Vorgabe.
+//
+// VITE_BASE bleibt als Notausgang: Wer das Repository forkt und ohne eigene
+// Domain auf GitHub Pages veroeffentlicht, liegt wieder unter einem Unterpfad
+// (/stl-viewer/) und setzt ihn darueber. Steht die Basis falsch, laedt die Seite
+// weiss — die Dateiverweise zeigen dann ins Leere.
 export default defineConfig({
-  base: process.env.VITE_BASE ?? "/stl-viewer/",
+  base: process.env.VITE_BASE ?? "/",
   plugins: [react(), tailwindcss(), securityHeaders()],
   worker: { format: "es" },
   build: {

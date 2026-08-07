@@ -2,7 +2,7 @@
 
 **3D-Modelle zeigen, besprechen und dokumentieren — direkt im Browser, ohne Upload.**
 
-### → [Werkzeug öffnen: reents3d.github.io/stl-viewer](https://reents3d.github.io/stl-viewer/)
+### → [Werkzeug öffnen: viewer.reents3d.de](https://viewer.reents3d.de/)
 
 Gelesen werden **STL** (binär und ASCII), **STEP** (`.step`, `.stp`) und **IGES**
 (`.iges`, `.igs`). Kostenlos, ohne Konto, ohne Installation.
@@ -119,7 +119,7 @@ Prototypen nicht erst auf einen fremden Server laden, um ihn anzusehen.
 
 ## Öffnen
 
-**[reents3d.github.io/stl-viewer](https://reents3d.github.io/stl-viewer/)** — im Browser
+**[viewer.reents3d.de](https://viewer.reents3d.de/)** — im Browser
 öffnen, Datei hineinziehen. Sonst nichts.
 
 Gelesen werden **STL** (binär und ASCII), **STEP** (`.step`, `.stp`) und **IGES**

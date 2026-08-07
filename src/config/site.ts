@@ -22,7 +22,7 @@ export const SITE = {
     imprint: "https://reents3d.de/impressum/",
     privacy: "https://reents3d.de/datenschutz/",
     repo: "https://github.com/Reents3D/stl-viewer",
-    live: "https://reents3d.github.io/stl-viewer/",
+    live: "https://viewer.reents3d.de/",
     advisor: "https://reents3d.github.io/fdm-material-advisor/",
   },
 

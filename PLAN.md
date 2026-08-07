@@ -1,7 +1,7 @@
 # Stand und nächste Schritte
 
 Stand: **2026-08-04**. Das Werkzeug ist veröffentlicht, vollständig benutzbar und
-läuft unter <https://reents3d.github.io/stl-viewer/>.
+läuft unter <https://viewer.reents3d.de/>.
 
 Diese Datei ist der Arbeitsstand, nicht die Doku — was das Werkzeug kann, steht im
 [README](README.md), warum es so gebaut ist, in [DECISIONS.md](DECISIONS.md).
