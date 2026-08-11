@@ -363,6 +363,31 @@ jede Aufnahme aus den Entwicklerwerkzeugen ist aber RGBA, und ein 32-Bit-PNG
 wird abgelehnt, auch wenn jeder Alphawert 255 ist. Dem Bild sieht man nichts an;
 die Ablehnung kommt erst nach dem Hochladen.
 
+### Warum nicht einfach das Fenster abfotografieren
+
+Weil der Store „Die Bildgröße ist falsch" meldet: Ein Fensterfoto hat die Maße
+des Fensters, nicht 1280 x 800. Der Griff zu `--einpassen` liegt dann nahe, und
+das Ergebnis ist zwar zulässig, aber schlecht:
+
+Eine Aufnahme von 2545 px Breite wird beim Einpassen auf 1280 px verkleinert.
+Die Oberfläche ist darin **halb so groß wie im Original** und im Store nicht
+mehr lesbar. Das liegt nicht am Umrechnen, sondern daran, dass die Anwendung
+bei der Aufnahme 2545 px zur Verfügung hatte und ihre Schrift entsprechend
+klein gesetzt hat.
+
+In der Geräteleiste auf 1280 x 800 gestellt, baut sich die Anwendung für genau
+diese Breite auf: 3D-Ansicht 928 x 743, Seitenleiste 352 x 743, kein
+waagerechter Überlauf. Jede Beschriftung steht dann in der Größe im Bild, in
+der sie auch am Bildschirm steht. Das ist der ganze Unterschied.
+
+`--einpassen` bleibt als Notausgang für Bilder, die sich nicht wiederholen
+lassen, etwa eine Aufnahme aus einer Fertigung. Für die Oberfläche gibt es
+keinen Grund, ihn zu nehmen.
+
+```powershell
+node scripts/store-bild.mjs alt.png neu.png --masse 1280x800 --einpassen --hintergrund 204B63
+```
+
 ---
 
 ## 7. Nach der Freigabe

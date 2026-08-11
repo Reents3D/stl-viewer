@@ -23,13 +23,14 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { basename, join } from "node:path";
 
-import { aufHintergrund, leseRgba, schreibeRgb, verkleinere } from "./lib/png.mjs";
+import { aufHintergrund, einpassen, leseRgba, schreibeRgb, verkleinere } from "./lib/png.mjs";
 
 const [quelle, ziel, ...rest] = process.argv.slice(2);
 
 const AUFRUF =
-  "Aufruf: node scripts/store-bild.mjs <quelle> <ziel> [--masse BxH] [--hintergrund RRGGBB]\n" +
-  "        Quelle und Ziel duerfen beide Ordner sein.";
+  "Aufruf: node scripts/store-bild.mjs <quelle> <ziel> [--masse BxH] [--einpassen] [--hintergrund RRGGBB]\n" +
+  "        Quelle und Ziel duerfen beide Ordner sein.\n" +
+  "        --einpassen nimmt Aufnahmen beliebiger Groesse an: verkleinern, mittig setzen, Raender fuellen.";
 
 if (!quelle || !ziel) {
   console.error(AUFRUF);
@@ -59,6 +60,7 @@ function option(name) {
 
 const masseOption = option("masse");
 const farbe = option("hintergrund") ?? "FFFFFF";
+const fit = rest.includes("--einpassen");
 
 if (!/^[0-9a-fA-F]{6}$/.test(farbe)) {
   console.error(`--hintergrund erwartet sechs Hexziffern ohne Raute, bekommen: ${farbe}`);
@@ -97,19 +99,32 @@ function verarbeite(quellDatei, zielDatei) {
   if (erwartet) {
     const faktorB = bild.breite / erwartet.b;
     const faktorH = bild.hoehe / erwartet.h;
+    const passtGenau = faktorB === 1 && faktorH === 1;
+    const ganzerFaktor = faktorB === faktorH && Number.isInteger(faktorB) && faktorB > 1;
 
-    if (faktorB !== 1 || faktorH !== 1) {
-      if (faktorB !== faktorH || !Number.isInteger(faktorB) || faktorB < 1) {
-        console.error(`  ${quellDatei} ist ${original}, gebraucht wird ${erwartet.b}x${erwartet.h}.`);
-        console.error(
-          `    Umgerechnet wird nur um ganze Faktoren (${erwartet.b * 2}x${erwartet.h * 2}, ${erwartet.b * 3}x${erwartet.h * 3} ...).`,
-        );
-        console.error("    Neu aufnehmen: in den Entwicklerwerkzeugen die Geraeteleiste auf");
-        console.error(`    ${erwartet.b} x ${erwartet.h} stellen, dann Strg+Shift+P und "Capture screenshot".`);
-        return false;
-      }
+    if (ganzerFaktor) {
       bild = verkleinere(bild, faktorB);
       hinweis = `  (aus ${original} um Faktor ${faktorB} heruntergerechnet)`;
+    } else if (!passtGenau && fit) {
+      try {
+        const eingepasst = einpassen(bild, erwartet.b, erwartet.h, hintergrund);
+        hinweis = `  (aus ${original} auf ${eingepasst.innen} verkleinert, mittig auf ${erwartet.b}x${erwartet.h} gesetzt)`;
+        bild = eingepasst;
+      } catch (ursache) {
+        console.error(`  ${quellDatei}: ${ursache.message}`);
+        return false;
+      }
+    } else if (!passtGenau) {
+      console.error(`  ${quellDatei} ist ${original}, gebraucht wird ${erwartet.b}x${erwartet.h}.`);
+      console.error("");
+      console.error("    Der beste Weg ist, gleich in Zielgroesse aufzunehmen:");
+      console.error("    F12, dann Strg+Shift+M fuer die Geraeteleiste, Masse auf");
+      console.error(`    ${erwartet.b} x ${erwartet.h}, dann Strg+Shift+P und "Capture screenshot".`);
+      console.error("    Ganze Vielfache davon werden ebenfalls angenommen und heruntergerechnet.");
+      console.error("");
+      console.error("    Vorhandene Aufnahmen lassen sich mit --einpassen verwenden. Sie werden");
+      console.error("    dann verkleinert und mittig gesetzt, mit Raendern in der Hintergrundfarbe.");
+      return false;
     }
   }
 

@@ -195,6 +195,103 @@ export function verkleinere({ breite, hoehe, punkte }, faktor) {
 }
 
 /**
+ * Rechnet auf beliebige Zielmaße herunter, indem je Zielpunkt der
+ * flächengewichtete Mittelwert des überdeckten Quellbereichs gebildet wird.
+ *
+ * Das ist derselbe Kastenfilter wie in verkleinere(), nur mit anteiligen
+ * Randpunkten statt ganzer. Für das VERKLEINERN ist er die richtige Wahl:
+ * Jeder Quellpunkt geht genau einmal und mit seinem Flächenanteil ein, es
+ * entsteht kein Flimmern und keine Doppelkante. Zum VERGRÖSSERN taugt er
+ * nicht, und das ist Absicht — ein hochgerechnetes Bildschirmfoto sieht man
+ * sofort.
+ */
+export function skaliere({ breite, hoehe, punkte }, zielB, zielH) {
+  if (zielB > breite || zielH > hoehe) {
+    throw new Error(
+      `Vergroessern ist nicht vorgesehen (${breite}x${hoehe} auf ${zielB}x${zielH}). Groesser aufnehmen.`,
+    );
+  }
+
+  const ziel = Buffer.alloc(zielB * zielH * 4);
+  const sx = breite / zielB;
+  const sy = hoehe / zielH;
+
+  for (let y = 0; y < zielH; y++) {
+    const y0 = y * sy;
+    const y1 = (y + 1) * sy;
+    const iy0 = Math.floor(y0);
+    const iy1 = Math.min(hoehe, Math.ceil(y1));
+
+    for (let x = 0; x < zielB; x++) {
+      const x0 = x * sx;
+      const x1 = (x + 1) * sx;
+      const ix0 = Math.floor(x0);
+      const ix1 = Math.min(breite, Math.ceil(x1));
+
+      const summe = [0, 0, 0, 0];
+      let gewicht = 0;
+
+      for (let yy = iy0; yy < iy1; yy++) {
+        const wy = Math.min(y1, yy + 1) - Math.max(y0, yy);
+        if (wy <= 0) continue;
+        for (let xx = ix0; xx < ix1; xx++) {
+          const wx = Math.min(x1, xx + 1) - Math.max(x0, xx);
+          if (wx <= 0) continue;
+          const w = wx * wy;
+          const i = (yy * breite + xx) * 4;
+          for (let k = 0; k < 4; k++) summe[k] += punkte[i + k] * w;
+          gewicht += w;
+        }
+      }
+
+      const j = (y * zielB + x) * 4;
+      for (let k = 0; k < 4; k++) ziel[j + k] = Math.round(summe[k] / gewicht);
+    }
+  }
+
+  return { breite: zielB, hoehe: zielH, punkte: ziel };
+}
+
+/**
+ * Passt ein Bild beliebiger Maße in eine feste Fläche ein: so weit
+ * verkleinern, dass es vollständig hineinpasst, dann mittig auf eine deckende
+ * Farbe setzen.
+ *
+ * WARUM EINPASSEN UND NICHT ZUSCHNEIDEN
+ * Der Store verlangt exakt 1280 x 800 oder 640 x 400. Ein Fensterfoto hat fast
+ * nie dieses Verhältnis. Zuschneiden würde Bildinhalt wegnehmen, und zwar an
+ * den Rändern, wo bei einer Programmoberfläche die Seitenleiste sitzt — also
+ * genau das, was das Bild zeigen soll. Ränder sind der ehrlichere Verlust: Sie
+ * kosten Fläche, aber keinen Inhalt.
+ *
+ * Die bessere Lösung bleibt, gleich in Zielgröße aufzunehmen. Diese Funktion
+ * ist für den Fall, dass die Aufnahmen schon da sind.
+ */
+export function einpassen(bild, zielB, zielH, hintergrund = [255, 255, 255]) {
+  const faktor = Math.min(zielB / bild.breite, zielH / bild.hoehe);
+  const innenB = Math.max(1, Math.round(bild.breite * faktor));
+  const innenH = Math.max(1, Math.round(bild.hoehe * faktor));
+  const innen = faktor < 1 ? skaliere(bild, innenB, innenH) : bild;
+
+  const punkte = Buffer.alloc(zielB * zielH * 4);
+  for (let i = 0; i < punkte.length; i += 4) {
+    punkte[i] = hintergrund[0];
+    punkte[i + 1] = hintergrund[1];
+    punkte[i + 2] = hintergrund[2];
+    punkte[i + 3] = 255;
+  }
+
+  const versatzX = Math.floor((zielB - innen.breite) / 2);
+  const versatzY = Math.floor((zielH - innen.hoehe) / 2);
+  for (let y = 0; y < innen.hoehe; y++) {
+    const quelle = innen.punkte.subarray(y * innen.breite * 4, (y + 1) * innen.breite * 4);
+    quelle.copy(punkte, ((y + versatzY) * zielB + versatzX) * 4);
+  }
+
+  return { breite: zielB, hoehe: zielH, punkte, innen: `${innen.breite}x${innen.hoehe}` };
+}
+
+/**
  * Legt das Bild über eine deckende Farbe und wirft den Alphakanal weg.
  *
  * Das Überlagern ist nicht nur Formsache: Ein halbdurchsichtiger Punkt wird
