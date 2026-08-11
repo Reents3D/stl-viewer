@@ -16,13 +16,16 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
+    "build:ext": "tsc --noEmit && node scripts/build-extension.mjs",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "check:artifact": "node scripts/check-artifact.mjs dist",
+    "check:ext": "node scripts/check-artifact.mjs dist-extension && node scripts/check-extension.mjs dist-extension",
+    "pack:ext": "npm run build:ext && npm run check:ext && node scripts/pack-extension.mjs",
     "sync:densities": "node scripts/sync-densities.mjs",
-    "ci": "npm run typecheck && npm run test && npm run build && npm run check:artifact"
+    "ci": "npm run typecheck && npm run test && npm run build && npm run check:artifact && npm run build:ext && npm run check:ext"
   },
   "dependencies": {
     "jspdf": "^3.0.3",

@@ -1,6 +1,26 @@
+import { cpSync, rmSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
+
+/**
+ * Zwei Bauziele aus einer Quelle.
+ *
+ *   npm run build      Webseite fuer viewer.reents3d.de   -> dist/
+ *   npm run build:ext  Chrome-Erweiterung fuer den Store  -> dist-extension/
+ *
+ * WARUM DIE ERWEITERUNG KEIN ZWEITES PROJEKT IST
+ * Sie ist dieselbe Anwendung. Ein eigenes Repository oder auch nur eine zweite
+ * Konfigurationsdatei haette zur Folge, dass die Inhaltssicherheitsrichtlinie
+ * an zwei Stellen steht — und die Zusage "die Datei verlaesst Ihren Rechner
+ * nicht" haengt an genau dieser Richtlinie. Zwei Fassungen davon laufen
+ * auseinander, ohne dass es jemandem auffaellt, denn die Anwendung
+ * funktioniert danach genauso gut. Deshalb: ein Bau, ein Regelwerk, ein
+ * Schalter.
+ */
+const isExtension = process.env.VITE_TARGET === "extension";
 
 /**
  * Inhaltssicherheitsrichtlinie — NUR im Build, nicht im Entwicklungsserver.
@@ -80,6 +100,67 @@ function securityHeaders(): Plugin {
   };
 }
 
+/**
+ * Macht aus dem gebauten Artefakt ein ladbares Erweiterungspaket.
+ *
+ * WAS RAUS MUSS UND WARUM
+ *   CNAME                  weist GitHub Pages die eigene Domain zu. In einem
+ *                          Erweiterungspaket ist die Datei sinnlos, und was
+ *                          sinnlos im Paket liegt, faellt bei der Pruefung als
+ *                          Frage auf.
+ *   manifest.webmanifest   ist das Manifest einer WEBSEITE. Neben dem
+ *                          manifest.json der Erweiterung stehen dann zwei
+ *                          Dateien mit demselben Zweck und verschiedenem
+ *                          Inhalt nebeneinander. Der Verweis darauf faellt
+ *                          weiter unten aus dem HTML.
+ *
+ * WAS DAZUKOMMT
+ *   manifest.json, background.js, _locales/, icons/ aus `extension/`.
+ *   Die liegen im Git und werden nicht erzeugt — Symbole sind Rasterbilder
+ *   (siehe scripts/icons/render.html), und ein Manifest, das bei jedem Bau neu
+ *   entsteht, kann man nicht in einem Diff lesen.
+ */
+function extensionPackage(): Plugin {
+  return {
+    name: "reents-extension-package",
+    apply: "build",
+    enforce: "post",
+
+    transformIndexHtml(html) {
+      if (!isExtension) return html;
+      return (
+        html
+          // Der Verweis zeigt sonst auf eine Datei, die gleich geloescht wird.
+          .replace(/\s*<link rel="manifest"[^>]*>/, "")
+          // Der Webtitel ist fuer die Google-Suche geschrieben und entsprechend
+          // lang. In einem Reiter, der neben anderen steht, zaehlt nur, was vor
+          // dem Abschneiden lesbar bleibt.
+          .replace(/<title>[^<]*<\/title>/, "<title>STL-, STEP- und IGES-Betrachter</title>")
+      );
+    },
+
+    /**
+     * closeBundle und nicht writeBundle: Vite kopiert `public/` ausserhalb des
+     * Rollup-Bundles. Wer in writeBundle aufraeumt, loescht CNAME, bevor es
+     * geschrieben wird — und findet es hinterher wieder im Paket.
+     */
+    closeBundle() {
+      if (!isExtension) return;
+      const out = resolve(import.meta.dirname, "dist-extension");
+
+      for (const datei of ["CNAME", "manifest.webmanifest"]) {
+        rmSync(resolve(out, datei), { force: true });
+      }
+
+      for (const eintrag of ["manifest.json", "background.js", "_locales", "icons"]) {
+        cpSync(resolve(import.meta.dirname, "extension", eintrag), resolve(out, eintrag), {
+          recursive: true,
+        });
+      }
+    },
+  };
+}
+
 // Basispfad. Seit dem Umzug auf viewer.reents3d.de liegt die Anwendung in der
 // Wurzel — deshalb "/" als Vorgabe.
 //
@@ -87,12 +168,26 @@ function securityHeaders(): Plugin {
 // Domain auf GitHub Pages veroeffentlicht, liegt wieder unter einem Unterpfad
 // (/stl-viewer/) und setzt ihn darueber. Steht die Basis falsch, laedt die Seite
 // weiss — die Dateiverweise zeigen dann ins Leere.
+//
+// Die Erweiterung bleibt bei "/": Eine Seite unter chrome-extension://<kennung>/
+// hat die Paketwurzel als Herkunftswurzel, absolute Verweise treffen also genau.
+// Das gilt auch fuer die Arbeiter, die Vite ueber `new URL(..., import.meta.url)`
+// aufloest — bei einer relativen Basis zeigten die aus dem Arbeiter heraus
+// woandershin als aus der Seite.
 export default defineConfig({
   base: process.env.VITE_BASE ?? "/",
-  plugins: [react(), tailwindcss(), securityHeaders()],
+  plugins: [react(), tailwindcss(), securityHeaders(), extensionPackage()],
   worker: { format: "es" },
+  define: {
+    // Herkunftskennung je Bauziel, siehe SITE.utm in src/config/site.ts.
+    "import.meta.env.VITE_UTM": JSON.stringify(
+      isExtension
+        ? "utm_source=chrome-web-store&utm_medium=extension&utm_campaign=stl-viewer"
+        : "utm_source=github&utm_medium=tool&utm_campaign=stl-viewer",
+    ),
+  },
   build: {
-    outDir: "dist",
+    outDir: isExtension ? "dist-extension" : "dist",
     sourcemap: false,
     target: "es2022",
     // three.js ist der mit Abstand groesste Brocken. Als eigener Chunk bleibt er

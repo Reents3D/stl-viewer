@@ -283,3 +283,85 @@ geladen; im Aufnahmedurchlauf selbst steht kein `await`.
 **Was bewusst nicht geprüft wird.** Ob die Marke auf dem Bauteil oder daneben liegt.
 Die Helligkeitsmessung deckt beides ab, eine Ausweichlogik („Marke verschieben, wenn
 Bauteil darunter") wäre Aufwand für einen Fall, den der Kunde durch Drehen selbst löst.
+
+---
+
+## ADR-015 — Die Chrome-Erweiterung ist ein zweites Bauziel, kein zweites Projekt
+
+**Status:** beschlossen und umgesetzt am 2026-08-11.
+
+**Entscheidung.** Dieselbe Anwendung wird zusätzlich als Chrome-Erweiterung
+ausgeliefert. Sie entsteht aus demselben Quelltext, derselben Vite-Konfiguration
+und derselben Inhaltssicherheitsrichtlinie; unterschieden wird über
+`VITE_TARGET=extension`. Was die Erweiterung darüber hinaus braucht, liegt
+versioniert in `extension/`: Manifest, Dienstprogramm, Sprachdateien, Symbole.
+
+**Warum überhaupt eine Erweiterung.** Aus dem Eintrag im Chrome Web Store
+entsteht eine indexierte Seite auf einer Google-Domain, die Firmenname,
+Anschrift und drei Verweise auf `reents3d.de` trägt, dazu die automatische
+Spiegelung in einschlägigen Erweiterungsverzeichnissen. Der Anlass ist also
+Sichtbarkeit. Getragen wird er nur, wenn das Werkzeug für sich steht, und das
+tut es hier: Es war vorher fertig.
+
+**Warum kein eigenes Repository.** Die Zusage „Ihre Datei verlässt den Rechner
+nicht" hängt an genau einer Richtlinie (ADR-001, ADR-013). Ein zweites
+Repository oder auch nur eine zweite Konfigurationsdatei hätte zur Folge, dass
+diese Richtlinie an zwei Stellen steht. Zwei Fassungen laufen auseinander, ohne
+dass es jemandem auffällt, denn die Anwendung funktioniert danach genauso gut.
+Genau diese Klasse von Fehler ist der Grund, warum es `check-artifact.mjs`
+überhaupt gibt.
+
+**Warum die Erweiterung keine einzige Berechtigung anfordert.** Jede
+Berechtigung erscheint bei der Installation als Satz, den der Nutzer lesen muss.
+Ein Werkzeug, das mit „kein Upload" wirbt und dabei Zugriff auf alle Seiten
+verlangt, widerlegt sich beim Einschalten selbst. Der Klick auf das Symbol
+öffnet die im Paket liegende Seite über `chrome.tabs.create`, und das braucht
+keine Berechtigung. Der bequeme Zusatz, einen bereits offenen Reiter
+wiederzuverwenden, bräuchte `chrome.tabs.query` mit `url` und damit die
+Berechtigung `tabs` — sie würde als Zugriff auf den Browserverlauf angezeigt.
+Der Tausch lohnt nicht. `check-extension.mjs` bricht ab, falls jemand später
+anders entscheidet, ohne diesen Absatz gelesen zu haben.
+
+**Warum das Paket kein Rahmen um die Website ist.** Naheliegend wäre ein
+Fenster, das `viewer.reents3d.de` einbettet. Der Store lehnt solche Pakete als
+blosse Verpackung ab, und die Zusage wäre dahin: Eine eingebettete Seite lädt
+ihren Code aus dem Netz. Das Paket enthält deshalb alles, einschließlich der
+7,4 MB großen WebAssembly von OpenCascade. Damit läuft die Erweiterung offline,
+und das ist gegenüber der Website ein eigenes Argument statt einer Kopie.
+
+**Was am Bau angepasst wurde und warum.** `CNAME` und `manifest.webmanifest`
+fallen aus dem Paket: Beide gehören zum Webbau, funktionieren in einer
+Erweiterung nicht falsch, sondern sinnlos, und was sinnlos im Paket liegt,
+erzeugt bei der Prüfung Rückfragen. Der Titel wird gekürzt, weil der lange für
+die Google-Suche geschrieben ist und in einem Reiter nur abschneidet. Der
+Basispfad bleibt `/`: Eine Seite unter `chrome-extension://<kennung>/` hat die
+Paketwurzel als Herkunftswurzel, absolute Verweise treffen also genau. Das gilt
+auch für die Arbeiter, die Vite über `new URL(..., import.meta.url)` auflöst.
+
+**Herkunftskennung.** `SITE.utm` ist über die Umgebung austauschbar und lautet
+im Erweiterungsbau `utm_source=chrome-web-store`. Ohne diese Trennung landen
+Website und Erweiterung in einem Topf, und die Frage, ob der Store-Eintrag
+Besucher bringt, wäre nicht zu beantworten. Es ist die Frage, wegen der es die
+Erweiterung gibt.
+
+**Was der Bau selbst prüft.** `check-artifact.mjs` läuft unverändert auch auf
+`dist-extension` — Richtlinie und fremde Ressourcen gelten dort genauso.
+Darüber liegt `check-extension.mjs` mit dem, was nur für den Store gilt:
+Manifestfassung, Berechtigungen, Richtlinie der Erweiterungsseiten,
+Symbolgrößen als echte PNG-Kopfdaten, Vollständigkeit und Längengrenzen beider
+Sprachfassungen (45 / 12 / 132 Zeichen), Reste aus dem Webbau. Der Grund ist
+nicht Ordnungsliebe: Eine abgelehnte Einreichung kostet keinen Code, sondern
+Tage, und fast alles, was zur Ablehnung führt, ist vorher am Paket ablesbar.
+
+**Warum ein eigener ZIP-Schreiber.** `zip` fehlt unter Windows,
+`Compress-Archive` aus PowerShell schreibt je nach Fassung Backslashes als
+Pfadtrenner, und ein Archiv mit Backslashes packt Chrome falsch aus. Eine
+Abhängigkeit dafür stünde dauerhaft in THIRD-PARTY.md. Das Format ist alt und
+festgelegt; die Zeitstempel im Archiv sind fest verdrahtet, damit dasselbe Paket
+immer dieselbe Prüfsumme hat und die Frage „ist das Hochgeladene das Gebaute"
+beantwortbar bleibt statt geglaubt zu werden.
+
+**Was bewusst nicht gebaut wurde.** Kein Kontextmenü auf STL-Verweisen fremder
+Seiten und keine Einblendung auf Modellportalen. Beides wäre nützlich, beides
+verlangt Zugriff auf fremde Seiten und macht aus einer Erweiterung ohne
+Berechtigungen eine mit der breitesten von allen.

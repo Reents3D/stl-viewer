@@ -69,7 +69,19 @@ export const SITE = {
     confidentiality: "NDA-fähig, Daten auf lokalem Server",
   },
 
-  utm: "utm_source=github&utm_medium=tool&utm_campaign=stl-viewer",
+  /**
+   * Herkunftskennung an jedem Verweis auf reents3d.de.
+   *
+   * Sie ist ueber die Umgebung austauschbar, weil dasselbe Werkzeug aus zwei
+   * Quellen kommt: als Seite unter viewer.reents3d.de und als Erweiterung aus
+   * dem Chrome Web Store. Ohne diese Trennung landen beide Wege in einem Topf,
+   * und die Frage "bringt der Store-Eintrag ueberhaupt Besucher" waere nicht zu
+   * beantworten — genau die Frage, wegen der es die Erweiterung gibt.
+   *
+   * Gesetzt wird sie in vite.config.ts je Bauziel; hier steht der Wert fuer den
+   * gewoehnlichen Webbau.
+   */
+  utm: import.meta.env.VITE_UTM ?? "utm_source=github&utm_medium=tool&utm_campaign=stl-viewer",
 } as const;
 
 export type BuildVolume = (typeof SITE.buildVolumes)[number];

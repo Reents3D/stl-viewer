@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <title>Symbole der Chrome-Erweiterung erzeugen</title>
+    <style>
+      body { font: 15px/1.6 system-ui, sans-serif; margin: 2rem; max-width: 46rem; }
+      h1 { font-size: 1.2rem; }
+      canvas { border: 1px solid #ccc; margin-right: .75rem; vertical-align: bottom; image-rendering: pixelated; }
+      button { font: inherit; padding: .5rem 1rem; margin-top: 1rem; cursor: pointer; }
+      code { background: #f2f2f2; padding: .1rem .3rem; }
+      #status { font-weight: 600; }
+    </style>
+  </head>
+  <body>
+    <h1>Symbole der Chrome-Erweiterung erzeugen</h1>
+
+    <p>
+      Der Chrome Web Store nimmt fuer Symbole nur Rasterbilder an, kein SVG. Diese
+      Seite rastert die Bildmarke aus <code>public/brand/reents-mark-square.svg</code>
+      in den vier geforderten Groessen. Die Dateien gehoeren nach
+      <code>extension/icons/</code> und liegen dort im Git &mdash; sie werden nicht bei
+      jedem Bau neu erzeugt, sondern nur, wenn sich die Bildmarke aendert.
+    </p>
+    <p>
+      <strong>So aufrufen:</strong> einen statischen Server auf dem Projektstamm
+      starten (<code>python -m http.server 8090</code>) und
+      <code>http://localhost:8090/scripts/icons/render.html</code> oeffnen. Direkt
+      aus dem Dateisystem geoeffnet verweigert der Browser das Auslesen der
+      Zeichenflaeche &mdash; eine per <code>file://</code> geladene Grafik gilt als
+      fremde Herkunft und macht die Zeichenflaeche unlesbar.
+    </p>
+
+    <div id="out"></div>
+    <button id="save" type="button">Alle vier Dateien herunterladen</button>
+    <p id="status">Bildmarke wird gesucht &hellip;</p>
+
+    <script>
+      const SIZES = [16, 32, 48, 128];
+
+      /**
+       * Zwei Adressen, weil zwei Server in Frage kommen: Der
+       * Entwicklungsserver von Vite legt `public/` auf die Wurzel, ein
+       * einfacher Dateiserver auf dem Projektstamm nicht. Die Seite soll unter
+       * beiden laufen, ohne dass jemand vorher nachdenken muss.
+       */
+      const CANDIDATES = ["../../public/brand/reents-mark-square.svg", "/brand/reents-mark-square.svg"];
+
+      const out = document.getElementById("out");
+      const status = document.getElementById("status");
+
+      function load(source) {
+        return new Promise((resolve, reject) => {
+          const image = new Image();
+          image.onload = () => resolve(image);
+          image.onerror = () => reject(new Error(source));
+          image.src = source;
+        });
+      }
+
+      function draw(image, size) {
+        const canvas = document.createElement("canvas");
+        canvas.width = size;
+        canvas.height = size;
+        canvas.title = size + " x " + size;
+        // Die Bildmarke ist randlos quadratisch (viewBox 708,66 x 708,66) und
+        // wird deshalb ohne Rand gezeichnet. Kein Freiraum, kein Beschnitt.
+        canvas.getContext("2d").drawImage(image, 0, 0, size, size);
+        return canvas;
+      }
+
+      (async () => {
+        let image = null;
+        for (const source of CANDIDATES) {
+          try {
+            image = await load(source);
+            break;
+          } catch {
+            /* naechste Adresse versuchen */
+          }
+        }
+
+        if (!image) {
+          status.textContent =
+            "Die Bildmarke wurde unter keiner der bekannten Adressen gefunden: " + CANDIDATES.join("  ");
+          return;
+        }
+
+        const icons = {};
+        for (const size of SIZES) {
+          const canvas = draw(image, size);
+          out.append(canvas);
+          // Ohne Praefix, damit ein Skript den Inhalt direkt als Base64 nimmt.
+          icons["icon-" + size + ".png"] = canvas.toDataURL("image/png").split(",")[1];
+        }
+
+        // Abgriff fuer die Automatisierung; der Knopf darunter ist der Weg fuer Menschen.
+        window.__icons = icons;
+        status.textContent = "Fertig. " + SIZES.length + " Groessen erzeugt.";
+      })();
+
+      document.getElementById("save").addEventListener("click", () => {
+        for (const [name, base64] of Object.entries(window.__icons ?? {})) {
+          const link = document.createElement("a");
+          link.href = "data:image/png;base64," + base64;
+          link.download = name;
+          link.click();
+        }
+      });
+    </script>
+  </body>
+</html>

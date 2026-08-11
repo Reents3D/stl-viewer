@@ -32,10 +32,20 @@ jobs:
       - name: Keine ausgehenden Aufrufe im eigenen Quelltext
         run: |
           set -e
-          if grep -rnE '\b(fetch|XMLHttpRequest|sendBeacon|WebSocket|EventSource)\s*\(' src/; then
+          if grep -rnE '\b(fetch|XMLHttpRequest|sendBeacon|WebSocket|EventSource)\s*\(' src/ extension/*.js; then
             echo "FEHLER: ausgehender Aufruf im Quelltext gefunden."
             echo "Auch mit connect-src 'self' baut dieses Projekt keine Verbindung selbst auf."
             echo "Siehe ADR-001 und ADR-013."
             exit 1
           fi
           echo "Keine ausgehenden Aufrufe im eigenen Quelltext."
+
+      # Die Erweiterung ist dasselbe Werkzeug aus demselben Quelltext (ADR-015).
+      # Sie hier mitzubauen kostet zwei Sekunden und faengt den Fall, den sonst
+      # erst die Ablehnung durch den Store meldet: eine Aenderung an der
+      # Richtlinie oder am Bau, nach der das Paket nicht mehr laedt. Zwischen
+      # zwei Einreichungen liegen Wochen - so lange darf der Bruch nicht liegen
+      # bleiben.
+      - run: npm run build:ext
+      - name: Erweiterungspaket pruefen (Manifest, Berechtigungen, Symbole)
+        run: npm run check:ext

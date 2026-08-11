@@ -122,6 +122,11 @@ Prototypen nicht erst auf einen fremden Server laden, um ihn anzusehen.
 **[viewer.reents3d.de](https://viewer.reents3d.de/)** — im Browser
 öffnen, Datei hineinziehen. Sonst nichts.
 
+Wer es lieber im Browser installiert hat: Es gibt dieselbe Anwendung als
+**Chrome-Erweiterung**. Sie enthält alles im Paket und läuft deshalb auch ohne
+Netzverbindung; Berechtigungen fordert sie keine an. Ein Klick auf das Symbol
+öffnet den Betrachter in einem neuen Reiter.
+
 Gelesen werden **STL** (binär und ASCII), **STEP** (`.step`, `.stp`) und **IGES**
 (`.iges`, `.igs`). Bei STEP und IGES entfällt die Einheitenwahl — sie steht in der Datei.
 
@@ -239,6 +244,30 @@ Inhaltssicherheitsrichtlinie noch drinsteht.
 Alle Marken-, Kontakt- und Adresskonstanten stehen in
 [`src/config/site.ts`](src/config/site.ts) — ein Domainwechsel ist ein Commit in einer
 Datei.
+
+### Die Chrome-Erweiterung
+
+Dieselbe Anwendung, zweites Bauziel. Kein zweites Projekt und keine zweite
+Fassung der Inhaltssicherheitsrichtlinie — die Begründung steht in
+[ADR-015](DECISIONS.md).
+
+```bash
+npm run build:ext   # baut nach dist-extension/
+npm run check:ext   # prueft Manifest, Berechtigungen, Symbole, Uebersetzungen
+npm run pack:ext    # beides, dann das ZIP fuer den Store
+```
+
+Zum Ausprobieren vor dem Hochladen: `chrome://extensions` öffnen,
+Entwicklermodus einschalten, „Entpackte Erweiterung laden" und
+`dist-extension/` auswählen.
+
+Was zusätzlich im Paket landet, liegt in [`extension/`](extension/): Manifest,
+Dienstprogramm, Sprachdateien und Symbole. Die Symbole sind Rasterbilder und
+werden nicht bei jedem Bau erzeugt; ändert sich die Bildmarke, erzeugt
+[`scripts/icons/render.html`](scripts/icons/render.html) sie neu.
+
+Die Texte für den Store, die Angaben zum Datenschutz und die Reihenfolge beim
+Einreichen stehen in [`docs/chrome-web-store.md`](docs/chrome-web-store.md).
 
 ## Lizenz
 

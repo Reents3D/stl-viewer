@@ -1,0 +1,18 @@
+{
+  "extName": {
+    "message": "STL-, STEP- und IGES-Betrachter ohne Upload",
+    "description": "Name im Store und in der Erweiterungsliste. Hoechstens 45 Zeichen."
+  },
+  "extShortName": {
+    "message": "STL-Viewer",
+    "description": "Kurzform fuer enge Stellen der Oberflaeche. Hoechstens 12 Zeichen."
+  },
+  "extDescription": {
+    "message": "Konstruktionsdatei ins Fenster ziehen: Maße, Volumen, Wandstärke und Überhänge prüfen, PDF erzeugen. Ohne Upload, ohne Konto.",
+    "description": "Kurzbeschreibung im Store. Hoechstens 132 Zeichen."
+  },
+  "actionTitle": {
+    "message": "STL-, STEP- und IGES-Betrachter öffnen",
+    "description": "Kurzhinweis am Symbol in der Werkzeugleiste."
+  }
+}
