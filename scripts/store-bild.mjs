@@ -28,9 +28,13 @@ import { aufHintergrund, einpassen, leseRgba, schreibeRgb, verkleinere } from ".
 const [quelle, ziel, ...rest] = process.argv.slice(2);
 
 const AUFRUF =
-  "Aufruf: node scripts/store-bild.mjs <quelle> <ziel> [--masse BxH] [--einpassen] [--hintergrund RRGGBB]\n" +
+  "Aufruf: node scripts/store-bild.mjs <quelle> <ziel> [--masse BxH] [--praefix name]\n" +
+  "                                    [--einpassen] [--hintergrund RRGGBB]\n" +
   "        Quelle und Ziel duerfen beide Ordner sein.\n" +
-  "        --einpassen nimmt Aufnahmen beliebiger Groesse an: verkleinern, mittig setzen, Raender fuellen.";
+  "        --praefix benennt die Ergebnisse durch (name-1.png, name-2.png ...), damit sie\n" +
+  "                  im Dateidialog nicht mit den Rohaufnahmen zu verwechseln sind.\n" +
+  "        --einpassen nimmt Aufnahmen beliebiger Groesse an: verkleinern, mittig setzen,\n" +
+  "                  Raender fuellen. Fuer Programmoberflaechen ungeeignet, siehe Anleitung.";
 
 if (!quelle || !ziel) {
   console.error(AUFRUF);
@@ -153,8 +157,25 @@ if (statSync(quelle).isDirectory()) {
   }
   mkdirSync(ziel, { recursive: true });
   console.log(`${dateien.length} Datei(en) aus ${quelle}:`);
+
+  /**
+   * Umbenennen ist hier keine Kosmetik.
+   *
+   * Die Entwicklerwerkzeuge nennen ihre Aufnahmen nach der Seite, also
+   * "chrome-extension___ploadeog..._index.html (3).png". Die umgerechnete Datei
+   * hiesse genauso, und im Dateidialog des Stores steht die ROHE daneben, die
+   * aus demselben Lauf im Downloadordner liegt. Genau so ist die falsche
+   * hochgeladen worden, mit "Die Bildgroesse ist falsch" als einzigem Hinweis.
+   * Ein Praefix macht die fertigen Dateien unverwechselbar und bringt sie
+   * zugleich in die Reihenfolge, in der sie im Store stehen sollen.
+   */
+  const praefix = option("praefix");
+  let nummer = 0;
+
   for (const name of dateien.sort()) {
-    if (!verarbeite(join(quelle, name), join(ziel, name))) fehler++;
+    nummer++;
+    const zielName = praefix ? `${praefix}-${nummer}.png` : name;
+    if (!verarbeite(join(quelle, name), join(ziel, zielName))) fehler++;
   }
 } else {
   if (!verarbeite(quelle, ziel)) fehler++;

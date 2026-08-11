@@ -348,15 +348,21 @@ selbst herunter.
 ### Und danach, zwingend
 
 ```powershell
-node scripts/store-bild.mjs "$env:USERPROFILE\Downloads\aufnahmen" docs/store-assets --masse 1280x800
+node scripts/store-bild.mjs "$env:USERPROFILE\Downloads\aufnahmen" docs/store-assets --masse 1280x800 --praefix bildschirmfoto
 ```
 
 Quelle und Ziel dürfen beide Ordner sein, dann laufen alle fünf in einem Zug
-durch. Einzeln geht auch:
+durch.
 
-```powershell
-node scripts/store-bild.mjs "$env:USERPROFILE\Downloads\localhost.png" docs/store-assets/bildschirmfoto-1.png --masse 1280x800
-```
+**`--praefix` ist nicht Kosmetik.** Die Entwicklerwerkzeuge nennen ihre
+Aufnahmen nach der Seite, also
+`chrome-extension___ploadeog..._index.html (3).png`. Ohne Umbenennen heißt die
+fertige Datei genauso wie die rohe, und im Dateidialog des Stores steht die
+rohe im Downloadordner obenauf. Genau so ist beim ersten Versuch die falsche
+hochgeladen worden; der Store meldete nur „Die Bildgröße ist falsch" und nannte
+keine Datei.
+
+**Hochgeladen wird aus `docs/store-assets/`, nie aus dem Downloadordner.**
 
 **Dieser Schritt ist keine Kür.** Der Store verlangt 24-Bit-PNG ohne Alpha,
 jede Aufnahme aus den Entwicklerwerkzeugen ist aber RGBA, und ein 32-Bit-PNG
