@@ -28,9 +28,34 @@ Das baut nach `dist-extension/`, prüft das Paket und schreibt
 `reents3d-stl-betrachter.zip`. Der Lauf gibt eine SHA-256-Prüfsumme aus.
 **Diese Prüfsumme gehört in die Notiz zur Einreichung** (Abschnitt 8), sonst ist
 später nicht mehr feststellbar, welcher Bau hinter einer Fassung im Store steckt.
+Derselbe Stand ergibt immer dasselbe Archiv: Die Zeitstempel im ZIP sind fest
+verdrahtet, damit genau diese Frage beantwortbar bleibt.
 
 Bricht die Prüfung ab, steht der Grund im Klartext dabei. Nicht das Prüfskript
 lockern: Es prüft genau die Punkte, an denen der Store sonst ablehnt.
+
+### In PowerShell: npm.cmd statt npm
+
+```powershell
+Set-Location "C:\Users\Riko\Documents\Claude Code\stl-viewer"
+npm.cmd run pack:ext
+```
+
+`npm` allein bricht in PowerShell ab:
+
+```
+Die Datei "C:\Program Files\nodejs\npm.ps1" kann nicht geladen werden,
+da die Ausführung von Skripts auf diesem System deaktiviert ist.
+```
+
+Grund ist die Ausführungsrichtlinie, die auf diesem Rechner in allen Bereichen
+`Undefined` ist und damit `Restricted` bedeutet. `npm` ist unter Windows ein
+PowerShell-Skript, `npm.cmd` dagegen eine Stapeldatei und von der Richtlinie
+nicht betroffen. **Die Richtlinie deswegen nicht herabsetzen** — sie schützt
+gegen ganz andere Dinge, und `npm.cmd` löst das Problem vollständig.
+
+Und: erst ins Projektverzeichnis wechseln. Ein `npm run` in
+`C:\Windows\system32` findet keine `package.json`.
 
 ---
 
@@ -273,4 +298,22 @@ zweites Mal an.
 
 | Fassung | Datum | SHA-256 des Archivs | Bemerkung |
 |---|---|---|---|
-| 1.0.0 | offen | offen | Erstveröffentlichung |
+| 1.0.0 | gebaut 2026-08-11, Einreichung offen | `6708a53a344d5f10ef7500956407aba07783b075cfaa67d216949bf5927bf52d` | Erstveröffentlichung |
+
+---
+
+## 9. Was hochgeladen wird: ZIP, nicht CRX
+
+Das Formular „Neues Element hinzufügen" nimmt eine **ZIP**-Datei mit der
+`manifest.json` in der Wurzel. Genau das schreibt `npm run pack:ext`.
+
+**Keine CRX hochladen.** Eine `.crx` ist das signierte Paket, das Chrome zum
+Installieren verwendet; der Store erzeugt sie selbst und signiert sie mit einem
+Schlüssel, den er verwaltet. Die Funktion „Erweiterung packen" unter
+`chrome://extensions` erzeugt zwar eine `.crx` samt `.pem`, aber die ist für die
+Verteilung außerhalb des Stores gedacht. Im Upload-Feld wird sie abgelehnt.
+
+Folgerung für den Schlüssel: Es gibt keinen, um den man sich kümmern müsste. Die
+Kennung der Erweiterung vergibt der Store beim ersten Hochladen und behält sie
+über alle weiteren Fassungen bei. Ein `"key"`-Feld gehört deshalb **nicht** ins
+Manifest.
