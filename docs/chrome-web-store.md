@@ -87,7 +87,8 @@ Die **ausführliche Beschreibung** steht dagegen nur im Formular und deshalb hie
 
 ### Deutsch
 
-> STL, STEP und IGES im Browser ansehen, vermessen und dokumentieren. Ohne
+> Der kostenlose STL-, STEP- und IGES-Betrachter von Reents3D (reents3d.de):
+> Konstruktionsdateien im Browser ansehen, vermessen und dokumentieren. Ohne
 > Upload, ohne Konto, ohne Registrierung.
 >
 > Ziehen Sie eine Konstruktionsdatei ins Fenster. Sie sehen sofort Abmessungen,
@@ -141,11 +142,13 @@ Die **ausführliche Beschreibung** steht dagegen nur im Formular und deshalb hie
 > github.com/Reents3D/stl-viewer
 >
 > Als Website ohne Installation: viewer.reents3d.de
+> Zum 3D-Druck-Service: reents3d.de/leistungen/3d-druck-service/
+> Zum XXL-3D-Druck: reents3d.de/leistungen/xxl-3d-druck/
 
 ### Englisch
 
-> View, measure and document STL, STEP and IGES files in your browser. No
-> upload, no account, no sign-up.
+> The free STL, STEP and IGES viewer by Reents3D (reents3d.de): view, measure
+> and document CAD files in your browser. No upload, no account, no sign-up.
 >
 > Drag a CAD file into the window. You immediately see dimensions, volume,
 > surface area and triangle count, rotate the model freely, place a section
@@ -196,6 +199,8 @@ Die **ausführliche Beschreibung** steht dagegen nur im Formular und deshalb hie
 > order: github.com/Reents3D/stl-viewer
 >
 > As a website without installation: viewer.reents3d.de
+> 3D printing service: reents3d.de/leistungen/3d-druck-service/
+> XXL 3D printing: reents3d.de/leistungen/xxl-3d-druck/
 
 ---
 
@@ -214,6 +219,56 @@ und nicht auf GitHub.** Das ist keine Kleinigkeit: Der ganze Verweiswert des
 Eintrags landet sonst auf einer Unterdomain oder bei Microsoft. Die
 Werkzeugseite unter `/werkzeuge/stl-betrachter/` muss vor der Einreichung
 existieren, sonst führt der Eintrag ins Leere.
+
+### Warum die Werkzeugseite und nicht die Leistungsseite
+
+Die Versuchung ist, das Website-Feld direkt auf `/leistungen/3d-druck-service/`
+zu richten und den Verweis dorthin zu lenken, wo Geld verdient wird. Drei
+Gründe dagegen:
+
+**Absichtstreffer.** Wer aus einem Betrachter-Eintrag auf „Website" klickt, will
+etwas über das Werkzeug wissen. Eine Verkaufsseite ist an dieser Stelle ein
+Themensprung und endet als Absprung. Ein Verweis, dem niemand folgt, ist auch
+als Signal wenig wert.
+
+**Die Prüfung sieht hin.** Das Website-Feld soll zur Erweiterung gehören. Ein
+Verweis auf eine allgemeine Verkaufsseite liest sich als sachfremde Werbung und
+ist ein vermeidbarer Ablehnungsgrund.
+
+**Sackgasse ist eine Frage der Bauart, nicht des Ziels.** Damit der Wert
+weiterfließt, muss die Werkzeugseite kräftig intern verlinken: auf
+`/leistungen/xxl-3d-druck/`, `/leistungen/3d-druck-service/` und
+`/leistungen/cad-konstruktion/`. Dann wandert er mit thematischem Kontext
+weiter, statt roh auf einer Seite zu landen, für die der Besucher nicht
+gekommen ist.
+
+### Was die Werkzeugseite tragen muss
+
+Eine reine Weiterleitung wäre verschenkt. Die Seite braucht:
+
+- Erklärung des Werkzeugs, Verweis auf den Store-Eintrag und auf
+  `viewer.reents3d.de` als Fassung ohne Installation
+- **Einen kompakten Begriffsteil** mit den zwölf bis fünfzehn Begriffen, die
+  der Betrachter selbst verwendet: Tessellierung, Wandstärke, Überhang,
+  Bauraum, Volumen gegen Gewicht, STL gegen STEP gegen IGES, Netz geschlossen.
+  Das ist ein Bruchteil der Arbeit eines vollen Glossars, passt thematisch
+  genau zu diesen Besuchern und macht aus der Landeseite eine Seite mit
+  eigenem Rang statt einer Durchreiche.
+- Interne Verweise auf die drei Leistungsseiten oben, im Fließtext und nicht
+  nur im Fuß
+
+Ein vollständiges Glossar über die ganze Website ist ein eigenes Vorhaben:
+sinnvoll für Longtail und für die Zitierfähigkeit in KI-Antworten, aber kein
+Ziel für externe Verweise und keine Voraussetzung für diese Einreichung.
+
+### Was im Beschreibungstext KEIN Verweis ist
+
+Die ausführliche Beschreibung ist reiner Text. Kein HTML, kein Markdown, und
+Adressen werden nicht zu anklickbaren Verweisen. Die Adressen im Text sind
+Markenerwähnungen, die gelesen und kopiert werden, aber sie sind nicht der
+Verweis. Der steht in den drei Feldern der Tabelle oben. Wer den Text mit
+Adressen füllt in der Annahme, damit Verweise zu sammeln, verschenkt die
+Zeilen, die den Besucher überzeugen sollen.
 
 ---
 
