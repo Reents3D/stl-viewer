@@ -1,0 +1,5 @@
+Die Erweiterung ist ein Betrachter für 3D-Konstruktionsdateien in den Formaten STL, STEP und IGES.
+
+Ein Klick auf das Symbol öffnet eine im Paket enthaltene Seite in einem neuen Tab. Dort zieht der Nutzer eine Datei hinein. Die Erweiterung zeigt Abmessungen, Volumen, Oberfläche und weitere Kennwerte, stellt das Modell dreidimensional dar und erzeugt daraus auf Wunsch eine PDF-Dokumentation.
+
+Die Datei wird ausschließlich lokal im Arbeitsspeicher des Browsers gelesen. Es findet kein Upload statt und es wird nichts gespeichert. Die Erweiterung fordert keine Berechtigungen an, greift auf keine Website zu und baut keine Verbindung nach außen auf.

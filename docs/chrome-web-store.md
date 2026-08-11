@@ -169,31 +169,72 @@ Zeilen, die den Besucher überzeugen sollen.
 
 ---
 
-## 5. Angaben zum Datenschutz
+## 5. Der Reiter „Datenschutz"
 
-Der Store verlangt diese Angaben und lehnt ohne sie ab.
+Feld fuer Feld, in der Reihenfolge des Formulars.
 
-**Einziger Zweck (single purpose):**
+### Alleiniger Zweck (Pflicht, 1.000 Zeichen)
 
-> Die Erweiterung öffnet einen Betrachter für 3D-Dateien in den Formaten STL,
-> STEP und IGES. Sie zeigt Geometrie und Kennwerte der geöffneten Datei an und
-> erzeugt daraus eine Dokumentation. Sie tut nichts darüber hinaus.
+Text steht in [`store-assets/alleiniger-zweck.txt`](store-assets/alleiniger-zweck.txt),
+rund 660 Zeichen.
 
-**Berechtigungen:** keine. Es gibt nichts zu begründen. Die Erweiterung
-deklariert weder `permissions` noch `host_permissions` noch `content_scripts`;
-`npm run check:ext` bricht ab, falls das jemand ändert.
+### Nutzt du remote code?
 
-**Fremdcode (remote code):** nein. Sämtlicher Code liegt im Paket,
-einschließlich der WebAssembly von OpenCascade für den STEP- und IGES-Import.
-Zur Laufzeit wird nichts nachgeladen.
+**Nein.** Nicht „Ja", auch nicht aus Vorsicht.
 
-**Datenerhebung:** keine der abgefragten Kategorien. Weder
-personenidentifizierende Angaben noch Gesundheits-, Finanz-, Authentifizierungs-,
-Standort- oder Nutzungsdaten, kein Website-Inhalt. Die geöffnete
-Konstruktionsdatei verlässt den Rechner nicht.
+Google definiert Remotecode als JS oder Wasm, das **nicht im Paket** enthalten
+ist, dazu Verweise auf externe Dateien in `<script>`-Tags und ueber `eval()`
+ausgewertete Zeichenketten. Nichts davon trifft zu, und das ist am Paket
+nachweisbar:
 
-Die drei Zusicherungen am Ende des Formulars (keine Weitergabe, kein Verkauf,
-Nutzung nur für den angegebenen Zweck) treffen zu und werden bestätigt.
+| Frage | Befund |
+|---|---|
+| Wasm im Paket? | `assets/occt-import-js-*.wasm`, 7,6 MB, mitgeliefert |
+| Externe `<script>`-Verweise? | keine, `check-artifact.mjs` bricht sonst ab |
+| `eval()` oder `new Function()`? | keine, weder in `src/` noch in `extension/` |
+| Richtlinie | `script-src 'self' 'wasm-unsafe-eval'; object-src 'self'` |
+
+`'wasm-unsafe-eval'` ist der haeufigste Grund, hier faelschlich „Ja"
+anzukreuzen. Die Freigabe erlaubt das **Uebersetzen mitgelieferter**
+WebAssembly, nicht das Nachladen von Code. Ohne sie lehnt der Browser
+`WebAssembly.instantiate` ab, und STEP und IGES bleiben unlesbar (ADR-013).
+
+Ein „Ja" verlangt eine Begruendung, verschaerft die Pruefung deutlich und
+fuehrt unter Manifest V3 sehr wahrscheinlich zur Ablehnung, weil das Ausfuehren
+von Fremdcode dort untersagt ist.
+
+### Datennutzung
+
+**Kein einziges Kaestchen ankreuzen.** Weder personenidentifizierende Angaben
+noch Gesundheits-, Finanz-, Authentifizierungs-, Kommunikations-, Standort-,
+Webprotokoll-, Aktivitaets- noch Websitecontent-Daten. Die geoeffnete
+Konstruktionsdatei verlaesst den Rechner nicht, und die Erweiterung hat keine
+Berechtigung, mit der sie ueberhaupt etwas erheben koennte.
+
+### Die drei Bestaetigungen
+
+Alle drei ankreuzen, alle drei treffen zu:
+
+- keine Weitergabe oder kein Verkauf von Nutzerdaten an Dritte
+- keine Nutzung ausserhalb des alleinigen Zwecks
+- keine Nutzung fuer Kreditwuerdigkeit oder Darlehen
+
+### URL der Datenschutzerklaerung
+
+`https://reents3d.de/datenschutz/` — **mit** `https://`.
+
+Die Erklaerung sollte einen Absatz zur Erweiterung enthalten. Pflicht ist das
+bei null erhobenen Daten nicht, aber ein Pruefer, der dort nur Text ueber die
+Website findet, stellt eine Rueckfrage, und eine Rueckfrage kostet eine
+Pruefrunde. Vorschlag:
+
+> **Chrome-Erweiterung „STL-, STEP- und IGES-Betrachter"**
+> Die Erweiterung verarbeitet die geoeffnete Datei ausschliesslich lokal im
+> Arbeitsspeicher Ihres Browsers. Es findet kein Upload statt, es werden keine
+> Daten an uns oder an Dritte uebermittelt und nichts wird gespeichert. Die
+> Erweiterung fordert keine Berechtigungen an und baut keine Verbindung nach
+> aussen auf. Es werden keine Cookies gesetzt und keine Nutzungsstatistiken
+> erhoben.
 
 ---
 
