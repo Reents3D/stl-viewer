@@ -152,6 +152,49 @@ export function schreibeRgb({ breite, hoehe, punkte }) {
 }
 
 /**
+ * Rechnet um einen GANZZAHLIGEN Faktor herunter, indem je Zielpunkt der
+ * Mittelwert des zugehörigen Quadrats gebildet wird.
+ *
+ * WARUM NUR GANZE FAKTOREN
+ * Weil nur die hier vorkommen und weil sie exakt sind. Die
+ * Entwicklerwerkzeuge nehmen bei Geräteskalierung 2 ein Bild in 2560 x 1600
+ * auf, wenn 1280 x 800 eingestellt ist. Beliebige Faktoren bräuchten eine
+ * Filterwahl und würden bei ungünstigen Verhältnissen sichtbar flimmern; ein
+ * ganzzahliger Mittelwert ist ein Kastenfilter ohne Restentscheidung.
+ *
+ * WARUM DAS BESSER IST ALS GLEICH KLEIN AUFZUNEHMEN
+ * Die Aufnahme in doppelter Größe und das Halbieren danach ist Überabtastung:
+ * Jeder Zielpunkt entsteht aus vier gemessenen statt einem. Kanten und Schrift
+ * werden dadurch sauberer als bei einer Aufnahme in Zielgröße, nicht
+ * schlechter. Wer die Wahl hat, nimmt also GRÖSSER auf.
+ */
+export function verkleinere({ breite, hoehe, punkte }, faktor) {
+  if (!Number.isInteger(faktor) || faktor < 1) throw new Error("Faktor muss eine ganze Zahl ab 1 sein");
+  if (faktor === 1) return { breite, hoehe, punkte };
+
+  const zielB = breite / faktor;
+  const zielH = hoehe / faktor;
+  const ziel = Buffer.alloc(zielB * zielH * 4);
+  const flaeche = faktor * faktor;
+
+  for (let y = 0; y < zielH; y++) {
+    for (let x = 0; x < zielB; x++) {
+      const summe = [0, 0, 0, 0];
+      for (let dy = 0; dy < faktor; dy++) {
+        for (let dx = 0; dx < faktor; dx++) {
+          const i = ((y * faktor + dy) * breite + (x * faktor + dx)) * 4;
+          for (let k = 0; k < 4; k++) summe[k] += punkte[i + k];
+        }
+      }
+      const j = (y * zielB + x) * 4;
+      for (let k = 0; k < 4; k++) ziel[j + k] = Math.round(summe[k] / flaeche);
+    }
+  }
+
+  return { breite: zielB, hoehe: zielH, punkte: ziel };
+}
+
+/**
  * Legt das Bild über eine deckende Farbe und wirft den Alphakanal weg.
  *
  * Das Überlagern ist nicht nur Formsache: Ein halbdurchsichtiger Punkt wird

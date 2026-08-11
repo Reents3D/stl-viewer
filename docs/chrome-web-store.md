@@ -325,6 +325,44 @@ der Suchergebnisliste erscheint:
 Aufnehmen im gebauten Paket, nicht im Entwicklungsserver: Der Titel und die
 Fußzeile unterscheiden sich.
 
+**Ein echtes Reents3D-Bauteil verwenden**, kein Testmodell. Ein Exponat oder ein
+XXL-Teil zeigt in einem Bild, worum es geht; ein grauer Würfel zeigt nichts.
+
+### So wird aufgenommen
+
+1. `chrome://extensions` öffnen, Entwicklermodus einschalten, „Entpackte
+   Erweiterung laden", `dist-extension/` wählen
+2. Betrachter öffnen, Modell laden, Ansicht einrichten
+3. `F12`, dann `Strg+Shift+M` für die Geräteleiste
+4. Maße auf **1280 x 800** stellen
+5. `Strg+Shift+P`, „Capture screenshot" tippen, Enter
+
+Die Aufnahme landet in den Downloads.
+
+**Geräteskalierung ruhig auf 2 stehen lassen.** Die Aufnahme ist dann 2560 x
+1600, und das ist die bessere Ausgangslage: Beim Halbieren entsteht jeder
+Zielpunkt aus vier gemessenen. Kanten und Schrift werden dadurch sauberer als
+bei einer Aufnahme in Zielgröße. `store-bild.mjs` rechnet ganzzahlige Faktoren
+selbst herunter.
+
+### Und danach, zwingend
+
+```powershell
+node scripts/store-bild.mjs "$env:USERPROFILE\Downloads\aufnahmen" docs/store-assets --masse 1280x800
+```
+
+Quelle und Ziel dürfen beide Ordner sein, dann laufen alle fünf in einem Zug
+durch. Einzeln geht auch:
+
+```powershell
+node scripts/store-bild.mjs "$env:USERPROFILE\Downloads\localhost.png" docs/store-assets/bildschirmfoto-1.png --masse 1280x800
+```
+
+**Dieser Schritt ist keine Kür.** Der Store verlangt 24-Bit-PNG ohne Alpha,
+jede Aufnahme aus den Entwicklerwerkzeugen ist aber RGBA, und ein 32-Bit-PNG
+wird abgelehnt, auch wenn jeder Alphawert 255 ist. Dem Bild sieht man nichts an;
+die Ablehnung kommt erst nach dem Hochladen.
+
 ---
 
 ## 7. Nach der Freigabe
