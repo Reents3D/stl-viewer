@@ -85,122 +85,19 @@ Längengrenzen (45 / 12 / 132 Zeichen).
 
 Die **ausführliche Beschreibung** steht dagegen nur im Formular und deshalb hier.
 
-### Deutsch
+### Deutsch und Englisch
 
-> Der kostenlose STL-, STEP- und IGES-Betrachter von Reents3D (reents3d.de):
-> Konstruktionsdateien im Browser ansehen, vermessen und dokumentieren. Ohne
-> Upload, ohne Konto, ohne Registrierung.
->
-> Ziehen Sie eine Konstruktionsdatei ins Fenster. Sie sehen sofort Abmessungen,
-> Volumen, Oberfläche und Dreieckszahl, drehen das Modell frei, legen eine
-> Schnittebene hinein und messen von Punkt zu Punkt. Am Ende erzeugen Sie eine
-> PDF-Dokumentation mit Rundumansichten je Achse.
->
-> DIE DATEI BLEIBT AUF IHREM RECHNER
->
-> Es gibt keinen Upload. Die Datei wird im Browser gelesen und nirgendwo
-> gespeichert. Das ist keine Zusage, der Sie glauben müssen: Die Erweiterung
-> fordert keine einzige Berechtigung an, und ihre
-> Inhaltssicherheitsrichtlinie lässt keine Verbindung nach außen zu. Prüfbar
-> mit offenem Netzwerk-Reiter in zehn Sekunden.
->
-> Damit eignet sie sich für Bauteile unter Geheimhaltung und für Prototypen, die
-> nicht auf einen fremden Server dürfen.
->
-> WAS SIE SEHEN
->
-> Abmessungen in Millimetern, Volumen, Oberfläche, Dreiecke, Eckpunkte,
-> Schwerpunkt
-> Gewichtsschätzung für 41 Werkstoffe, wahlweise nach Füllgrad
-> Wandstärke per Klick, mit Warnung unter 1,5 mm
-> Überhänge farbig markiert, bevor der Druck schiefgeht
-> Größenvergleich mit Person, Europalette, A4-Blatt und Tasse
-> Prüfung gegen reale Bauräume bis 1.800 x 2.400 x 1.800 mm
-> Anmerkungen direkt am Modell, für die Abstimmung mit Kunden und Kollegen
-> Versionsvergleich zweier Stände, ausgerichtet über den CAD-Nullpunkt
-> PDF-Dokumentation und Bildexport
->
-> WELCHE FORMATE
->
-> STL binär und ASCII, STEP (.step, .stp) und IGES (.iges, .igs). STEP und IGES
-> werden im Browser tesselliert, wahlweise grob, mittel oder fein. Die
-> Einheitenwahl entfällt dort: Sie steht in der Datei.
->
-> FÜR WEN
->
-> Konstrukteure, Einkäufer, Modell- und Messebauer, 3D-Druck-Anwender und alle,
-> die eine CAD-Datei prüfen wollen, ohne ein CAD-Programm zu öffnen.
->
-> Funktioniert offline. Einmal installiert, braucht die Erweiterung kein
-> Netzwerk.
->
-> WER DAHINTERSTEHT
->
-> Die Reents Technologies GmbH aus Holm bei Hamburg fertigt XXL-3D-Druck,
-> Exponate und Messebau mit über 50 eigenen FDM-Anlagen, am Stück bis
-> 2.400 mm. Dieses Werkzeug ist quelloffen und kostenlos, auch ohne Auftrag:
-> github.com/Reents3D/stl-viewer
->
-> Als Website ohne Installation: viewer.reents3d.de
-> Zum 3D-Druck-Service: reents3d.de/leistungen/3d-druck-service/
-> Zum XXL-3D-Druck: reents3d.de/leistungen/xxl-3d-druck/
+Beide Fassungen liegen als reine Textdateien, nicht hier im Fliesstext:
 
-### Englisch
+- [`store-assets/beschreibung-de.txt`](store-assets/beschreibung-de.txt)
+- [`store-assets/beschreibung-en.txt`](store-assets/beschreibung-en.txt)
 
-> The free STL, STEP and IGES viewer by Reents3D (reents3d.de): view, measure
-> and document CAD files in your browser. No upload, no account, no sign-up.
->
-> Drag a CAD file into the window. You immediately see dimensions, volume,
-> surface area and triangle count, rotate the model freely, place a section
-> plane and measure point to point. Finally you export a PDF documentation with
-> all-round views per axis.
->
-> THE FILE STAYS ON YOUR COMPUTER
->
-> There is no upload. The file is read in the browser and stored nowhere. You do
-> not have to take our word for it: the extension requests no permission at all,
-> and its content security policy allows no outbound connection. Verifiable with
-> an open network tab in ten seconds.
->
-> That makes it suitable for parts under NDA and for prototypes that must not go
-> to someone else's server.
->
-> WHAT YOU SEE
->
-> Dimensions in millimetres, volume, surface area, triangles, vertices, centre
-> of mass
-> Weight estimate for 41 materials, by infill level
-> Wall thickness on click, with a warning below 1.5 mm
-> Overhangs highlighted before a print goes wrong
-> Size comparison against a person, a euro pallet, an A4 sheet and a mug
-> Check against real build volumes up to 1,800 x 2,400 x 1,800 mm
-> Annotations directly on the model, for talking to customers and colleagues
-> Version comparison of two revisions, aligned on the CAD origin
-> PDF documentation and image export
->
-> WHICH FORMATS
->
-> STL binary and ASCII, STEP (.step, .stp) and IGES (.iges, .igs). STEP and IGES
-> are tessellated in the browser, coarse, medium or fine. No unit choice is
-> needed there: it is stored in the file.
->
-> WHO IT IS FOR
->
-> Design engineers, buyers, model and exhibition builders, 3D printing users and
-> anyone who wants to check a CAD file without opening a CAD program.
->
-> Works offline. Once installed, the extension needs no network.
->
-> WHO IS BEHIND IT
->
-> Reents Technologies GmbH in Holm near Hamburg produces XXL 3D printing,
-> exhibits and trade fair construction on more than 50 in-house FDM machines, up
-> to 2,400 mm in one piece. This tool is open source and free, with or without an
-> order: github.com/Reents3D/stl-viewer
->
-> As a website without installation: viewer.reents3d.de
-> 3D printing service: reents3d.de/leistungen/3d-druck-service/
-> XXL 3D printing: reents3d.de/leistungen/xxl-3d-druck/
+**Warum als Datei und nicht als Zitatblock in dieser Anleitung:** Aus einem
+Markdown-Zitat laesst sich der Text nicht kopieren, ohne hinterher jedes `> `
+von Hand zu entfernen. Der Text wandert aber genau einmal, naemlich in das
+Formularfeld. Die Datei oeffnen, alles markieren, einfuegen.
+
+Laenge: rund 2.400 Zeichen, das Feld nimmt 16.000.
 
 ---
 

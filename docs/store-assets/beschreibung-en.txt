@@ -1,0 +1,53 @@
+The free STL, STEP and IGES viewer by Reents3D (reents3d.de): view, measure and
+document CAD files in your browser. No upload, no account, no sign-up.
+
+Drag a CAD file into the window. You immediately see dimensions, volume,
+surface area and triangle count, rotate the model freely, place a section plane
+and measure point to point. Finally you export a PDF documentation with
+all-round views per axis.
+
+THE FILE STAYS ON YOUR COMPUTER
+
+There is no upload. The file is read in the browser and stored nowhere. You do
+not have to take our word for it: the extension requests no permission at all,
+and its content security policy allows no outbound connection. Verifiable with
+an open network tab in ten seconds.
+
+That makes it suitable for parts under NDA and for prototypes that must not go
+to someone else's server.
+
+WHAT YOU SEE
+
+Dimensions in millimetres, volume, surface area, triangles, vertices, centre of mass
+Weight estimate for 41 materials, by infill level
+Wall thickness on click, with a warning below 1.5 mm
+Overhangs highlighted before a print goes wrong
+Size comparison against a person, a euro pallet, an A4 sheet and a mug
+Check against real build volumes up to 1,800 x 2,400 x 1,800 mm
+Annotations directly on the model, for talking to customers and colleagues
+Version comparison of two revisions, aligned on the CAD origin
+PDF documentation and image export
+
+WHICH FORMATS
+
+STL binary and ASCII, STEP (.step, .stp) and IGES (.iges, .igs). STEP and IGES
+are tessellated in the browser, coarse, medium or fine. No unit choice is
+needed there: it is stored in the file.
+
+WHO IT IS FOR
+
+Design engineers, buyers, model and exhibition builders, 3D printing users and
+anyone who wants to check a CAD file without opening a CAD program.
+
+Works offline. Once installed, the extension needs no network.
+
+WHO IS BEHIND IT
+
+Reents Technologies GmbH in Holm near Hamburg produces XXL 3D printing,
+exhibits and trade fair construction on more than 50 in-house FDM machines, up
+to 2,400 mm in one piece. This tool is open source and free, with or without an
+order: github.com/Reents3D/stl-viewer
+
+As a website without installation: viewer.reents3d.de
+3D printing service: reents3d.de/leistungen/3d-druck-service/
+XXL 3D printing: reents3d.de/leistungen/xxl-3d-druck/

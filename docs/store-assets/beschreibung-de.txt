@@ -1,0 +1,55 @@
+Der kostenlose STL-, STEP- und IGES-Betrachter von Reents3D (reents3d.de):
+Konstruktionsdateien im Browser ansehen, vermessen und dokumentieren. Ohne
+Upload, ohne Konto, ohne Registrierung.
+
+Ziehen Sie eine Konstruktionsdatei ins Fenster. Sie sehen sofort Abmessungen,
+Volumen, Oberfläche und Dreieckszahl, drehen das Modell frei, legen eine
+Schnittebene hinein und messen von Punkt zu Punkt. Am Ende erzeugen Sie eine
+PDF-Dokumentation mit Rundumansichten je Achse.
+
+DIE DATEI BLEIBT AUF IHREM RECHNER
+
+Es gibt keinen Upload. Die Datei wird im Browser gelesen und nirgendwo
+gespeichert. Das ist keine Zusage, der Sie glauben müssen: Die Erweiterung
+fordert keine einzige Berechtigung an, und ihre Inhaltssicherheitsrichtlinie
+lässt keine Verbindung nach außen zu. Prüfbar mit offenem Netzwerk-Reiter in
+zehn Sekunden.
+
+Damit eignet sie sich für Bauteile unter Geheimhaltung und für Prototypen, die
+nicht auf einen fremden Server dürfen.
+
+WAS SIE SEHEN
+
+Abmessungen in Millimetern, Volumen, Oberfläche, Dreiecke, Eckpunkte, Schwerpunkt
+Gewichtsschätzung für 41 Werkstoffe, wahlweise nach Füllgrad
+Wandstärke per Klick, mit Warnung unter 1,5 mm
+Überhänge farbig markiert, bevor der Druck schiefgeht
+Größenvergleich mit Person, Europalette, A4-Blatt und Tasse
+Prüfung gegen reale Bauräume bis 1.800 x 2.400 x 1.800 mm
+Anmerkungen direkt am Modell, für die Abstimmung mit Kunden und Kollegen
+Versionsvergleich zweier Stände, ausgerichtet über den CAD-Nullpunkt
+PDF-Dokumentation und Bildexport
+
+WELCHE FORMATE
+
+STL binär und ASCII, STEP (.step, .stp) und IGES (.iges, .igs). STEP und IGES
+werden im Browser tesselliert, wahlweise grob, mittel oder fein. Die
+Einheitenwahl entfällt dort: Sie steht in der Datei.
+
+FÜR WEN
+
+Konstrukteure, Einkäufer, Modell- und Messebauer, 3D-Druck-Anwender und alle,
+die eine CAD-Datei prüfen wollen, ohne ein CAD-Programm zu öffnen.
+
+Funktioniert offline. Einmal installiert, braucht die Erweiterung kein Netzwerk.
+
+WER DAHINTERSTEHT
+
+Die Reents Technologies GmbH aus Holm bei Hamburg fertigt XXL-3D-Druck,
+Exponate und Messebau mit über 50 eigenen FDM-Anlagen, am Stück bis 2.400 mm.
+Dieses Werkzeug ist quelloffen und kostenlos, auch ohne Auftrag:
+github.com/Reents3D/stl-viewer
+
+Als Website ohne Installation: viewer.reents3d.de
+Zum 3D-Druck-Service: reents3d.de/leistungen/3d-druck-service/
+Zum XXL-3D-Druck: reents3d.de/leistungen/xxl-3d-druck/
