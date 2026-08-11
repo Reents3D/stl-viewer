@@ -25,22 +25,12 @@ import { deflateRawSync } from "node:zlib";
 import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 
+// Dieselbe Pruefsumme braucht das PNG-Format (scripts/lib/png.mjs). Zwei
+// Tabellen fuer denselben Algorithmus waeren eine zu viel.
+import { crc32 } from "./lib/png.mjs";
+
 const quelle = process.argv[2] ?? "dist-extension";
 const ziel = process.argv[3] ?? "reents3d-stl-betrachter.zip";
-
-/* --------------------------------------------------------------- CRC-32 */
-
-const CRC_TABELLE = Uint32Array.from({ length: 256 }, (_, n) => {
-  let c = n;
-  for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
-  return c >>> 0;
-});
-
-function crc32(daten) {
-  let c = 0xffffffff;
-  for (const byte of daten) c = CRC_TABELLE[(c ^ byte) & 0xff] ^ (c >>> 8);
-  return (c ^ 0xffffffff) >>> 0;
-}
 
 /* ------------------------------------------------------------ Zeitstempel */
 

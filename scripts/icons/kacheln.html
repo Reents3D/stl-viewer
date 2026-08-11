@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <title>Werbekacheln fuer den Chrome Web Store erzeugen</title>
+    <style>
+      @font-face {
+        font-family: "Montserrat";
+        src: url("../../src/styles/fonts/montserrat-var.woff2") format("woff2-variations");
+        font-weight: 100 900;
+      }
+      @font-face {
+        font-family: "Sora";
+        src: url("../../src/styles/fonts/sora-var.woff2") format("woff2-variations");
+        font-weight: 100 800;
+      }
+      body { font: 15px/1.6 system-ui, sans-serif; margin: 2rem; max-width: 60rem; }
+      h1 { font-size: 1.2rem; }
+      canvas { border: 1px solid #ccc; display: block; margin: 1rem 0; max-width: 100%; height: auto; }
+      button { font: inherit; padding: .5rem 1rem; cursor: pointer; }
+      code { background: #f2f2f2; padding: .1rem .3rem; }
+      #status { font-weight: 600; }
+    </style>
+  </head>
+  <body>
+    <h1>Werbekacheln fuer den Chrome Web Store</h1>
+
+    <p>
+      Zwei Groessen: die kleine Kachel 440 x 280 (empfohlen, erscheint in
+      Uebersichten) und die grosse 1400 x 560 (freiwillig, noetig fuer
+      redaktionelle Platzierungen). Der Store verlangt
+      <strong>JPEG oder 24-Bit-PNG ohne Alpha</strong>; die Zeichenflaeche liefert
+      RGBA, deshalb laeuft danach <code>scripts/store-bild.mjs</code> darueber.
+    </p>
+    <p>
+      <strong>Bewusst ohne Bildschirmfoto darin.</strong> Eine Werbekachel ist eine
+      Markenflaeche, kein Schaufenster: In der Uebersicht steht sie klein neben
+      vielen anderen, und ein hineinkopierter Programmausschnitt wird dort zu
+      Brei. Was wirkt, sind Zeichen, ein Wort und eine Aussage.
+    </p>
+    <p>
+      Aufrufen ueber einen statischen Server auf dem Projektstamm
+      (<code>python -m http.server 8090</code>), dann
+      <code>/scripts/icons/kacheln.html</code>.
+    </p>
+
+    <div id="out"></div>
+    <button id="save" type="button">Beide Kacheln herunterladen</button>
+    <p id="status">Schriften und Wortmarke werden geladen &hellip;</p>
+
+    <script>
+      // Markenfarben aus den Logodateien, nicht aus der aelteren Palette:
+      // Petrol #204B63, Hellblau #95C6E5. Der Verlauf ist derselbe wie in der
+      // Bildmarke, damit Kachel und Symbol nebeneinander zusammengehoeren.
+      const PETROL = "#204B63";
+      const HELLBLAU = "#95C6E5";
+
+      const KACHELN = [
+        { name: "werbekachel-klein-440x280.png", b: 440, h: 280 },
+        { name: "werbekachel-gross-1400x560.png", b: 1400, h: 560 },
+      ];
+
+      const out = document.getElementById("out");
+      const status = document.getElementById("status");
+
+      function ladeBild(quelle) {
+        return new Promise((ok, fehl) => {
+          const bild = new Image();
+          bild.onload = () => ok(bild);
+          bild.onerror = () => fehl(new Error(quelle));
+          bild.src = quelle;
+        });
+      }
+
+      function zeichne(canvas, logo) {
+        const { width: B, height: H } = canvas;
+        const ctx = canvas.getContext("2d");
+        // Massstab ueber die HOEHE, nicht ueber die Breite.
+        //
+        // Die beiden Kacheln haben verschiedene Seitenverhaeltnisse: 440 x 280
+        // ist 1,57 zu 1, die grosse 1400 x 560 dagegen 2,5 zu 1. Ein Massstab
+        // aus der Breite (1400/440 = 3,18) schiebt den Satz unten aus dem Bild;
+        // genau so ist die erste Fassung ausgeliefert worden, mit halb
+        // abgeschnittenem "Betrachter". Ueber die Hoehe gerechnet passt beides,
+        // und die Mehrbreite der grossen Kachel bleibt als Freiraum rechts
+        // stehen. Fuer ein Banner ist das der richtige Aufbau.
+        const s = H / 280;
+
+        const verlauf = ctx.createLinearGradient(B, H, 0, 0);
+        verlauf.addColorStop(0, HELLBLAU);
+        verlauf.addColorStop(0.55, "#3B6F8F");
+        verlauf.addColorStop(1, PETROL);
+        ctx.fillStyle = verlauf;
+        ctx.fillRect(0, 0, B, H);
+
+        // Wortmarke oben links, Seitenverhaeltnis aus der Datei (695,85 : 283,41).
+        const logoB = 132 * s;
+        const logoH = logoB * (283.41 / 695.85);
+        ctx.drawImage(logo, 30 * s, 28 * s, logoB, logoH);
+
+        ctx.fillStyle = "#FFFFFF";
+        ctx.textBaseline = "alphabetic";
+
+        ctx.font = `700 ${13 * s}px Montserrat, sans-serif`;
+        ctx.letterSpacing = `${2.4 * s}px`;
+        ctx.fillText("STL · STEP · IGES", 30 * s, 128 * s);
+
+        ctx.letterSpacing = "0px";
+        ctx.font = `700 ${40 * s}px Sora, Montserrat, sans-serif`;
+        ctx.fillText("Betrachter", 30 * s, 176 * s);
+
+        ctx.font = `400 ${15 * s}px Montserrat, sans-serif`;
+        ctx.globalAlpha = 0.92;
+        ctx.fillText("Maße, Volumen, Wandstärke, PDF", 30 * s, 205 * s);
+        ctx.globalAlpha = 1;
+
+        // Die eigentliche Aussage als abgesetzte Marke, nicht als weiterer Satz.
+        const text = "OHNE UPLOAD";
+        ctx.font = `700 ${12 * s}px Montserrat, sans-serif`;
+        ctx.letterSpacing = `${1.6 * s}px`;
+        const breite = ctx.measureText(text).width;
+        const padX = 12 * s;
+        const padY = 8 * s;
+        const y = 228 * s;
+        ctx.fillStyle = "rgba(255,255,255,0.16)";
+        ctx.beginPath();
+        ctx.roundRect(30 * s, y, breite + padX * 2, 30 * s, 6 * s);
+        ctx.fill();
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fillText(text, 30 * s + padX, y + 20 * s + padY - 8 * s);
+        ctx.letterSpacing = "0px";
+      }
+
+      (async () => {
+        try {
+          await Promise.all([
+            document.fonts.load('700 40px Sora'),
+            document.fonts.load('700 13px Montserrat'),
+            document.fonts.load('400 15px Montserrat'),
+          ]);
+          await document.fonts.ready;
+        } catch {
+          status.textContent = "Schriften konnten nicht geladen werden, es wird ersatzweise gezeichnet.";
+        }
+
+        let logo;
+        for (const quelle of ["../../public/brand/reents-logo-horizontal-white.svg", "/brand/reents-logo-horizontal-white.svg"]) {
+          try {
+            logo = await ladeBild(quelle);
+            break;
+          } catch {
+            /* naechste Adresse */
+          }
+        }
+        if (!logo) {
+          status.textContent = "Die Wortmarke wurde nicht gefunden. Laeuft der Server auf dem Projektstamm?";
+          return;
+        }
+
+        const kacheln = {};
+        for (const k of KACHELN) {
+          const canvas = document.createElement("canvas");
+          canvas.width = k.b;
+          canvas.height = k.h;
+          zeichne(canvas, logo);
+          out.append(canvas);
+          kacheln[k.name] = canvas.toDataURL("image/png").split(",")[1];
+        }
+        window.__kacheln = kacheln;
+        status.textContent = "Fertig. Danach durch scripts/store-bild.mjs schicken (Alphakanal entfernen).";
+      })();
+
+      document.getElementById("save").addEventListener("click", () => {
+        for (const [name, base64] of Object.entries(window.__kacheln ?? {})) {
+          const a = document.createElement("a");
+          a.href = "data:image/png;base64," + base64;
+          a.download = name;
+          a.click();
+        }
+      });
+    </script>
+  </body>
+</html>
