@@ -36,7 +36,15 @@
     <p id="status">Bildmarke wird gesucht &hellip;</p>
 
     <script>
-      const SIZES = [16, 32, 48, 128];
+      /**
+       * 16 bis 128 sind die Symbolgroessen der Erweiterung selbst und gehoeren
+       * nach extension/icons/.
+       *
+       * 300 gehoert NICHT dorthin: Das ist das Store-Logo der Microsoft Edge
+       * Add-ons, ein reines Eintragsbild wie die Werbekacheln. Es liegt in
+       * docs/store-assets/ und wird nie mit ausgeliefert.
+       */
+      const SIZES = [16, 32, 48, 128, 300];
 
       /**
        * Zwei Adressen, weil zwei Server in Frage kommen: Der

@@ -49,6 +49,19 @@
     <p id="status">Schriften und Wortmarke werden geladen &hellip;</p>
 
     <script>
+      // Die Kachel ist DURCHGEHEND ENGLISCH, auch im deutschen Eintrag.
+      //
+      // Sie ist im Formular ein globales Asset: Es gibt sie genau einmal fuer
+      // alle Sprachfassungen, anders als bei Beschreibung und Bildschirmfotos.
+      // Eine deutsche Kachel stuende damit auch im englischen, spanischen und
+      // japanischen Eintrag. "Viewer" ueber "Maße, Volumen, Wandstaerke" waere
+      // ausserdem halb uebersetzt und faellt schlechter auf als beides ganz.
+      //
+      // Was auf der Kachel steht, ist ohnehin fast sprachfrei: Die Formatnamen
+      // sind international, und "NO UPLOAD" versteht auch, wer kein Englisch
+      // spricht. Der deutsche Markt liest die Sprache im Titel und in der
+      // Beschreibung, und die kommen aus _locales.
+
       // Markenfarben aus den Logodateien, nicht aus der aelteren Palette:
       // Petrol #204B63, Hellblau #95C6E5. Der Verlauf ist derselbe wie in der
       // Bildmarke, damit Kachel und Symbol nebeneinander zusammengehoeren.
@@ -107,15 +120,15 @@
 
         ctx.letterSpacing = "0px";
         ctx.font = `700 ${40 * s}px Sora, Montserrat, sans-serif`;
-        ctx.fillText("Betrachter", 30 * s, 176 * s);
+        ctx.fillText("Viewer", 30 * s, 176 * s);
 
         ctx.font = `400 ${15 * s}px Montserrat, sans-serif`;
         ctx.globalAlpha = 0.92;
-        ctx.fillText("Maße, Volumen, Wandstärke, PDF", 30 * s, 205 * s);
+        ctx.fillText("Dimensions, volume, wall thickness, PDF", 30 * s, 205 * s);
         ctx.globalAlpha = 1;
 
         // Die eigentliche Aussage als abgesetzte Marke, nicht als weiterer Satz.
-        const text = "OHNE UPLOAD";
+        const text = "NO UPLOAD";
         ctx.font = `700 ${12 * s}px Montserrat, sans-serif`;
         ctx.letterSpacing = `${1.6 * s}px`;
         const breite = ctx.measureText(text).width;

@@ -83,10 +83,17 @@ if (masseOption) {
 }
 
 /**
- * Vom Store erwartete Maße. Andere sind kein Fehler dieses Skripts, aber fast
- * immer ein Versehen — deshalb ein Hinweis statt einer Sperre.
+ * Von den Stores erwartete Maße. Andere sind kein Fehler dieses Skripts, aber
+ * fast immer ein Versehen — deshalb ein Hinweis statt einer Sperre.
+ *
+ *   Chrome Web Store   Bildschirmfotos 1280x800 oder 640x400
+ *                      Werbekacheln 440x280 und 1400x560
+ *                      Händlersymbol 128x128
+ *   Edge Add-ons       Bildschirmfotos 1366x768
+ *                      Store-Logo 300x300
+ *                      kleine Werbekachel 440x280 (dieselbe wie Chrome)
  */
-const BEKANNT = ["1280x800", "640x400", "440x280", "1400x560", "128x128"];
+const BEKANNT = ["1280x800", "640x400", "440x280", "1400x560", "128x128", "1366x768", "300x300"];
 
 function verarbeite(quellDatei, zielDatei) {
   let bild;
