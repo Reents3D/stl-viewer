@@ -1,7 +1,13 @@
 # Einreichung bei Microsoft Edge Add-ons
 
-Zweitverwertung desselben Pakets. Wer die Chrome-Einreichung hinter sich hat
-([chrome-web-store.md](chrome-web-store.md)), braucht hier etwa eine Stunde.
+Zweitverwertung desselben Pakets. Das **Ausfüllen** des Eintrags dauert etwa
+eine Stunde, wenn die Chrome-Einreichung sitzt
+([chrome-web-store.md](chrome-web-store.md)).
+
+**Die Kontoregistrierung davor dauert Tage bis Wochen.** Das ist der Grund,
+warum die Reihenfolge in dieser Datei bei null anfängt und nicht beim Formular.
+Wer erst am Tag der Einreichung merkt, dass Microsoft die Firma telefonisch
+prüft, wartet danach noch zwei Wochen.
 
 **Warum überhaupt ein zweiter Store:** Aus demselben Bau entsteht eine zweite
 Eintragsseite auf einer Microsoft-Domain, mit demselben Firmennamen, derselben
@@ -42,13 +48,77 @@ Prüfung beanstandet.
 
 ## 1. Konto
 
-<https://partner.microsoft.com/dashboard/microsoftedge>
+**Kostenlos.** Anders als bei Google keine Anmeldegebühr. Das ist auch schon
+die einzige Stelle, an der Edge einfacher ist als Chrome.
 
-- **Kostenlos.** Anders als bei Google keine Anmeldegebühr.
-- Mit einem **Firmen-Microsoft-Konto** anlegen, nicht privat. Gleiche Begründung
-  wie bei Chrome: Der Eintrag hängt dauerhaft daran.
-- Publisher-Anzeigename: `Reents Technologies GmbH`, exakt wie im Impressum und
-  wie im Chrome Web Store.
+### Der Anmeldeweg
+
+Das Partner Center ist ein Sammelportal für viele Microsoft-Programme. Wer sich
+dort anmeldet, ohne im Edge-Programm eingeschrieben zu sein, sieht eine fast
+leere Startseite: unter „Workspaces" nur „My access", unter „Quick starts"
+steht `undefined`. Das ist kein Fehler, sondern ein Konto ohne Programm.
+
+Die Einschreibung liegt hinter:
+
+> **Partner Center → Account settings → Programs → Karte „Microsoft Edge" →
+> „Get started"**
+
+Das Registrierungsformular öffnet sich dann in einem neuen Tab.
+
+### Die Falle: Arbeitskonto geht nicht
+
+> „The Microsoft Edge program doesn't support registering with a work or school
+> account."
+
+Ein Microsoft-365-Konto der Firma, also etwa `name@reents3d.de` in einem
+Entra-Mandanten, **funktioniert nicht.** Verlangt wird ein **Microsoft-Konto
+(MSA)**: outlook.com, live.com, hotmail.com — oder ein GitHub-Konto, mit dem
+Microsoft automatisch ein MSA anlegt.
+
+Das klingt nach einem Widerspruch zum Firmenkonto, ist aber keiner: Das MSA ist
+nur der **Primary Owner** des Kontos. Die Firmendaten kommen im Formular
+darunter, und nach der Freigabe lässt sich der Entra-Mandant der Firma
+verknüpfen, damit weitere Personen die Erweiterung verwalten können.
+
+**Praktisch heißt das:** ein eigenes MSA für diesen Zweck anlegen, kein
+persönliches Privatkonto verwenden und keins, das an einer einzelnen Person
+hängt. Der Zugang zu diesem Postfach entscheidet später darüber, wer den
+Store-Eintrag ändern kann.
+
+### Kontotyp: Company, und zwar unumkehrbar
+
+Für die Reents Technologies GmbH ist **Company** richtig, sonst darf der
+eingetragene Firmenname nicht als Publisher erscheinen.
+
+Zwei Felder sind nach der Einschreibung **nicht mehr änderbar**:
+
+- **Account country/region**
+- **Account type** — „Switching from a company to an individual account is not
+  supported."
+
+### Was die Firmenprüfung verlangt
+
+- **Dauer:** „a few days to a few weeks."
+- **Anruf:** „Your company might receive phone calls from Microsoft
+  verification partners." Wer ans Telefon geht, sollte das wissen.
+- **Company approver:** Name, E-Mail und Telefonnummer einer Person, die
+  Microsoft bestätigt, dass der Anmeldende für die Firma handeln darf. Bei
+  einer GmbH sinnvollerweise die Geschäftsführung.
+- **Kontaktangaben:** müssen die eingetragene Firmen-E-Mail-Adresse verwenden.
+- **Nachweise**, falls die Prüfung hakt: Rechnungen eines Versorgers,
+  **DUNS-Nummer**, Handelsregisterauszug. Hochzuladen unter
+  *Account settings | Legal info*. Wer die DUNS-Nummer noch nicht hat: kostenlos
+  bei Dun & Bradstreet, aber mit Tagen bis Wochen Vorlauf.
+
+### Publisher-Anzeigename
+
+`Reents Technologies GmbH` — der eingetragene Firmenname, exakt wie im
+Impressum und wie im Chrome Web Store. Höchstens 50 Zeichen, hier sind es 24.
+
+### Währenddessen
+
+Die Prüfung blockiert nur die Veröffentlichung, nicht die Vorbereitung. Paket
+und Texte liegen ohnehin fertig.
 
 ---
 
