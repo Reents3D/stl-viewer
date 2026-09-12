@@ -1,6 +1,8 @@
 # STL-, STEP- und IGES-Betrachter
 
 **3D-Modelle zeigen, besprechen und dokumentieren — direkt im Browser, ohne Upload.**
+Ein kostenloses Werkzeug der [Reents Technologies GmbH](https://reents3d.de/) (Reents3D),
+XXL-3D-Druck und Exponatebau in Holm bei Hamburg.
 
 ### → [Werkzeug öffnen: viewer.reents3d.de](https://viewer.reents3d.de/)
 
