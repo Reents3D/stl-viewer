@@ -35,6 +35,11 @@ Diese Datei ist der Arbeitsstand, nicht die Doku — was das Werkzeug kann, steh
   ausgewiesen. Bei IGES weist die Oberfläche zusätzlich darauf hin, dass lose
   Flächen formatbedingt sind und nicht auf einen Konstruktionsfehler deuten.
 - 91 Tests, CI und Pages-Auslieferung grün
+- **Chrome-Erweiterung** im Web Store. Version 1.0.0 (August 2026) war von Hand
+  gepackt und enthielt ein beschädigtes `icons/icon-48.png` — manche Nutzer konnten
+  sie deshalb nicht installieren. Seit 2026-11-13 entsteht das Paket mit
+  `npm run build:extension` aus `extension/`. Der Bau prüft Icons, Manifest und Texte
+  und läuft auch in der CI; zwei Bauläufe ergeben dieselbe ZIP. Version 1.0.1 = Icon-Fix.
 
 ## Offen
 

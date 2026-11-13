@@ -187,6 +187,7 @@ nachgeladen). Kein Server, kein Backend, kein Build-Schritt zur Laufzeit.
 | --- | --- |
 | `npm run dev` | Entwicklungsserver |
 | `npm run build` | Typprüfung und Bau nach `dist/` |
+| `npm run build:extension` | Chrome-Erweiterung nach `dist-extension/` und als ZIP für den Web Store |
 | `npm run preview` | Gebautes Artefakt lokal ausliefern |
 | `npm test` | Testsuite |
 | `npm run ci` | Alles zusammen — das, was auch die Pipeline fährt |
@@ -237,6 +238,14 @@ Der Viewer selbst wird von Hand geprüft; die Liste steht in
 Jeder Push auf `main` baut und veröffentlicht nach GitHub Pages. Die Pipeline prüft
 vorher Typen, Tests und das gebaute Artefakt — unter anderem darauf, dass die
 Inhaltssicherheitsrichtlinie noch drinsteht.
+
+**Chrome-Erweiterung.** Dieselbe Anwendung gibt es als Erweiterung im Chrome Web Store.
+Was nur zur Erweiterung gehört (Manifest, Dienstprogramm, Sprachdateien, Icons), liegt in
+[`extension/`](extension/). Für eine neue Fassung die Version in
+`extension/manifest.json` erhöhen, `npm run build:extension` ausführen und die erzeugte
+`reents3d-stl-betrachter-<version>.zip` im Developer Dashboard hochladen. Der Bau bricht
+ab, wenn ein Icon nicht dekodierbar ist, ein Text zu lang ist oder das Manifest eine
+Berechtigung anfordert.
 
 Alle Marken-, Kontakt- und Adresskonstanten stehen in
 [`src/config/site.ts`](src/config/site.ts) — ein Domainwechsel ist ein Commit in einer

@@ -15,3 +15,7 @@ coverage/
 *.iges
 *.igs
 !tests/fixtures/*.stl
+
+# Chrome-Erweiterung: Bauausgabe von npm run build:extension
+/dist-extension/
+/reents3d-stl-betrachter*.zip

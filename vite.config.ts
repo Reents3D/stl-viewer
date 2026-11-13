@@ -80,6 +80,26 @@ function securityHeaders(): Plugin {
   };
 }
 
+/**
+ * Abweichungen der Chrome-Erweiterung von der Webfassung — nur im Modus "extension".
+ *
+ *   Titel         Der Reiter zeigt den kurzen Namen; der lange Suchmaschinentitel
+ *                 der Webfassung ist in einer Erweiterung nur Ballast.
+ *   Web-Manifest  Gehoert zur installierbaren Webseite (PWA) und ist im Paket nicht
+ *                 enthalten. Der Verweis wuerde ins Leere zeigen.
+ */
+function extensionHtml(): Plugin {
+  return {
+    name: "reents-extension-html",
+    apply: "build",
+    transformIndexHtml(html) {
+      return html
+        .replace(/<title>[^<]*<\/title>/, "<title>STL-, STEP- und IGES-Betrachter</title>")
+        .replace(/\s*<link rel="manifest"[^>]*>/, "");
+    },
+  };
+}
+
 // Basispfad. Seit dem Umzug auf viewer.reents3d.de liegt die Anwendung in der
 // Wurzel — deshalb "/" als Vorgabe.
 //
@@ -87,12 +107,21 @@ function securityHeaders(): Plugin {
 // Domain auf GitHub Pages veroeffentlicht, liegt wieder unter einem Unterpfad
 // (/stl-viewer/) und setzt ihn darueber. Steht die Basis falsch, laedt die Seite
 // weiss — die Dateiverweise zeigen dann ins Leere.
-export default defineConfig({
+//
+// Modus "extension" baut die Chrome-Erweiterung nach dist-extension/ — aufgerufen
+// von scripts/build-extension.ts, das danach Manifest, Icons und ZIP ergaenzt.
+export default defineConfig(({ mode }) => ({
   base: process.env.VITE_BASE ?? "/",
-  plugins: [react(), tailwindcss(), securityHeaders()],
+  plugins: [
+    react(),
+    tailwindcss(),
+    securityHeaders(),
+    ...(mode === "extension" ? [extensionHtml()] : []),
+  ],
   worker: { format: "es" },
   build: {
-    outDir: "dist",
+    outDir: mode === "extension" ? "dist-extension" : "dist",
+    emptyOutDir: true,
     sourcemap: false,
     target: "es2022",
     // three.js ist der mit Abstand groesste Brocken. Als eigener Chunk bleibt er
@@ -104,4 +133,4 @@ export default defineConfig({
     },
     chunkSizeWarningLimit: 1200,
   },
-});
+}));

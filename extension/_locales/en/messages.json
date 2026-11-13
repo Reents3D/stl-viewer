@@ -1,0 +1,18 @@
+{
+  "extName": {
+    "message": "STL, STEP and IGES Viewer without Upload",
+    "description": "Name im Store und in der Erweiterungsliste. Hoechstens 45 Zeichen."
+  },
+  "extShortName": {
+    "message": "STL Viewer",
+    "description": "Kurzform fuer enge Stellen der Oberflaeche. Hoechstens 12 Zeichen."
+  },
+  "extDescription": {
+    "message": "Drop a CAD file into the window: check dimensions, volume, wall thickness and overhangs, export a PDF. No upload, no account.",
+    "description": "Kurzbeschreibung im Store. Hoechstens 132 Zeichen."
+  },
+  "actionTitle": {
+    "message": "Open the STL, STEP and IGES viewer",
+    "description": "Kurzhinweis am Symbol in der Werkzeugleiste."
+  }
+}

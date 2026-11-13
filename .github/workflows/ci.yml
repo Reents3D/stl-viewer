@@ -24,6 +24,12 @@ jobs:
       - name: Artefakt pruefen (Richtlinie, externe Ressourcen)
         run: node scripts/check-artifact.mjs dist
 
+      # Die Chrome-Erweiterung wird bei jedem Lauf mitgebaut. Das Bauskript prueft
+      # Manifest, Icons und Texte und bricht ab, wenn das Paket im Store nicht
+      # installierbar waere (Anlass: beschaedigtes icon-48.png in 1.0.0).
+      - name: Chrome-Erweiterung bauen und pruefen
+        run: node scripts/build-extension.ts
+
       # Seit ADR-013 laesst die Richtlinie Anfragen an die EIGENE Herkunft zu -
       # noetig fuer die WebAssembly des STEP-Imports. Damit aus dieser Oeffnung
       # kein Einfallstor wird, darf der EIGENE Quelltext weiterhin keinen

@@ -69,7 +69,13 @@ export const SITE = {
     confidentiality: "NDA-fähig, Daten auf lokalem Server",
   },
 
-  utm: "utm_source=github&utm_medium=tool&utm_campaign=stl-viewer",
+  // Die Chrome-Erweiterung meldet sich als eigene Quelle, damit Besuche aus dem
+  // Store getrennt von der Webfassung auszuwerten sind. Der Modus kommt aus
+  // `vite build --mode extension` (scripts/build-extension.ts).
+  utm:
+    import.meta.env.MODE === "extension"
+      ? "utm_source=chrome-web-store&utm_medium=extension&utm_campaign=stl-viewer"
+      : "utm_source=github&utm_medium=tool&utm_campaign=stl-viewer",
 } as const;
 
 export type BuildVolume = (typeof SITE.buildVolumes)[number];
